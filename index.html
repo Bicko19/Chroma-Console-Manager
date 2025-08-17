@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chroma Console MIDI Editor - Enhanced</title>
+    <title>Chroma Console MIDI Editor - Debug Enhanced</title>
     <script src="https://cdn.jsdelivr.net/npm/webmidi@latest/dist/iife/webmidi.iife.js"></script>
     <style>
         * {
@@ -78,6 +78,21 @@
         @keyframes monitoring-pulse {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.3; }
+        }
+
+        .debug-panel {
+            background: rgba(255, 0, 0, 0.1);
+            border: 1px solid #ff4757;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .debug-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
         }
 
         .control-panel {
@@ -269,6 +284,10 @@
             transform: none;
         }
 
+        .btn.debug {
+            background: linear-gradient(45deg, #ff4757, #ff6b6b);
+        }
+
         .preset-name {
             flex: 1;
             padding: 12px;
@@ -324,10 +343,10 @@
             background: rgba(0, 0, 0, 0.3);
             border-radius: 8px;
             padding: 15px;
-            height: 120px;
+            height: 180px;
             overflow-y: auto;
             font-family: 'Courier New', monospace;
-            font-size: 12px;
+            font-size: 11px;
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
@@ -352,6 +371,14 @@
             color: #4ecdc4;
         }
 
+        .log-entry.debug {
+            color: #ff6b6b;
+        }
+
+        .log-entry.ui {
+            color: #a55eea;
+        }
+
         .monitoring-indicator {
             background: rgba(255, 165, 2, 0.2);
             border: 1px solid #ffa502;
@@ -366,7 +393,7 @@
                 grid-template-columns: 1fr;
             }
             
-            .preset-controls {
+            .preset-controls, .debug-controls {
                 flex-direction: column;
             }
             
@@ -402,13 +429,25 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>Chroma Console MIDI Editor</h1>
+            <h1>Chroma Console MIDI Editor - Debug Mode</h1>
             <div class="connection-status">
                 <div class="status-indicator" id="statusIndicator"></div>
                 <span id="connectionStatus">Disconnected</span>
                 <button class="btn" id="connectBtn">Connect Device</button>
                 <button class="btn" id="refreshMidi">Refresh MIDI</button>
             </div>
+        </div>
+
+        <div class="debug-panel">
+            <h3 style="color: #ff4757; margin-bottom: 10px;">🐛 Debug Panel</h3>
+            <div class="debug-controls">
+                <button class="btn debug" id="testConnection">Test Connection</button>
+                <button class="btn debug" id="sendTestCC">Send Test CC</button>
+                <button class="btn debug" id="sendTestPC">Send Test Program Change</button>
+                <button class="btn debug" id="clearLog">Clear Log</button>
+                <button class="btn debug" id="debugMonitoring">Debug Monitoring</button>
+            </div>
+            <div id="debugInfo" style="font-family: monospace; font-size: 12px; color: #ffa502;"></div>
         </div>
 
         <div class="monitoring-indicator" id="monitoringIndicator">
@@ -598,18 +637,18 @@
         </div>
 
         <div class="preset-section">
-            <h3>MIDI Log</h3>
+            <h3>MIDI Log - Enhanced Debug</h3>
             <div class="log" id="midiLog"></div>
         </div>
 
         <div class="footer">
-            <p>Enhanced Chroma Console MIDI Editor | Built for <a href="https://www.hologramelectronics.com/chroma-console" target="_blank">Hologram Electronics Chroma Console</a></p>
-            <p>Features: Live Monitoring • Preset Loading • Corrected MIDI Implementation</p>
+            <p>Debug Enhanced Chroma Console MIDI Editor | Built for <a href="https://www.hologramelectronics.com/chroma-console" target="_blank">Hologram Electronics Chroma Console</a></p>
+            <p>Debug Mode: Interface Logging • Connection Testing • MIDI Monitoring</p>
         </div>
     </div>
 
     <script>
-        class EnhancedChromaConsoleEditor {
+        class DebugEnhancedChromaEditor {
             constructor() {
                 this.outputDevice = null;
                 this.inputDevice = null;
@@ -619,8 +658,9 @@
                 this.midiAccess = null;
                 this.parameterCache = new Map();
                 this.presets = JSON.parse(localStorage.getItem('chromaPresets') || '[]');
+                this.debugMode = true;
                 
-                // Corrected parameter definitions based on official MIDI implementation
+                // Corrected parameter definitions - using middle values for ranges
                 this.parameters = {
                     // Primary Controls
                     tilt: { cc: 64, default: 64 },
@@ -634,7 +674,7 @@
                     diffusionAmount: { cc: 69, default: 64 },
                     textureAmount: { cc: 71, default: 64 },
                     
-                    // Module Selection
+                    // Module Selection - using middle values of ranges
                     character: { cc: 16, default: 10 },
                     movement: { cc: 17, default: 10 },
                     diffusion: { cc: 18, default: 10 },
@@ -644,24 +684,44 @@
                 this.initializeUI();
                 this.loadPresets();
                 this.generatePresetButtons();
-                this.log('Enhanced Chroma Console Editor initialized', 'success');
+                this.setupDebugControls();
+                this.log('Debug Enhanced Chroma Console Editor initialized', 'success');
+                this.debugLog('Debug mode enabled - all interactions will be logged');
+            }
+
+            debugLog(message, data = null) {
+                if (this.debugMode) {
+                    this.log(`🐛 ${message}${data ? `: ${JSON.stringify(data)}` : ''}`, 'debug');
+                    
+                    // Also update debug info panel
+                    const debugInfo = document.getElementById('debugInfo');
+                    const timestamp = new Date().toLocaleTimeString();
+                    debugInfo.innerHTML = `Last Debug: [${timestamp}] ${message}`;
+                }
+            }
+
+            uiLog(action, element, value = null) {
+                const valueStr = value !== null ? ` (value: ${value})` : '';
+                this.log(`🎛️ UI: ${action} on ${element}${valueStr}`, 'ui');
             }
 
             async initialize() {
+                this.debugLog('Starting MIDI initialization');
+                
                 try {
                     if (typeof WebMidi !== 'undefined') {
-                        this.log('Attempting to enable WebMidi.js...', 'info');
+                        this.debugLog('WebMidi.js detected, attempting to enable');
                         await WebMidi.enable({ sysex: true });
                         this.useWebMidiJS = true;
-                        this.log('WebMidi.js enabled successfully', 'success');
+                        this.debugLog('WebMidi.js enabled successfully', { version: WebMidi.version });
                     } else if (navigator.requestMIDIAccess) {
-                        this.log('WebMidi.js not available, trying native Web MIDI API...', 'info');
+                        this.debugLog('WebMidi.js not available, trying native Web MIDI API');
                         this.midiAccess = await navigator.requestMIDIAccess({ 
                             sysex: true,
                             software: true 
                         });
                         this.useWebMidiJS = false;
-                        this.log('Native Web MIDI API enabled successfully', 'success');
+                        this.debugLog('Native Web MIDI API enabled successfully');
                     } else {
                         throw new Error('Web MIDI API not supported in this browser');
                     }
@@ -670,32 +730,154 @@
                     connectBtn.disabled = false;
                     connectBtn.textContent = 'Connect Device';
                     
+                    this.debugLog('MIDI initialization complete');
+                    
                 } catch (error) {
+                    this.debugLog('MIDI initialization failed', { error: error.message });
                     this.log(`MIDI initialization failed: ${error.message}`, 'error');
                 }
             }
 
+            setupDebugControls() {
+                document.getElementById('testConnection').addEventListener('click', () => {
+                    this.uiLog('clicked', 'Test Connection button');
+                    this.testConnection();
+                });
+
+                document.getElementById('sendTestCC').addEventListener('click', () => {
+                    this.uiLog('clicked', 'Send Test CC button');
+                    this.sendTestCC();
+                });
+
+                document.getElementById('sendTestPC').addEventListener('click', () => {
+                    this.uiLog('clicked', 'Send Test Program Change button');
+                    this.sendTestPC();
+                });
+
+                document.getElementById('clearLog').addEventListener('click', () => {
+                    this.uiLog('clicked', 'Clear Log button');
+                    this.clearLog();
+                });
+
+                document.getElementById('debugMonitoring').addEventListener('click', () => {
+                    this.uiLog('clicked', 'Debug Monitoring button');
+                    this.debugMonitoring();
+                });
+            }
+
+            testConnection() {
+                this.debugLog('Testing connection');
+                
+                if (!this.connected) {
+                    this.log('❌ Not connected to device', 'error');
+                    return;
+                }
+
+                this.log('✅ Output device connected', 'success');
+                this.debugLog('Output device info', { 
+                    name: this.outputDevice?.name,
+                    id: this.outputDevice?.id 
+                });
+
+                if (this.inputDevice) {
+                    this.log('✅ Input device connected', 'success');
+                    this.debugLog('Input device info', { 
+                        name: this.inputDevice?.name,
+                        id: this.inputDevice?.id 
+                    });
+                } else {
+                    this.log('⚠️ No input device - monitoring disabled', 'info');
+                }
+
+                this.log(`✅ Monitoring: ${this.monitoring ? 'Active' : 'Inactive'}`, 'info');
+            }
+
+            async sendTestCC() {
+                this.debugLog('Sending test CC message');
+                
+                if (!this.connected) {
+                    this.log('❌ Cannot send test CC - not connected', 'error');
+                    return;
+                }
+
+                // Send a test CC message (CC#64, value 100)
+                await this.sendCC(64, 100);
+                this.log('🧪 Test CC sent: CC#64 = 100', 'info');
+                
+                // Reset after 1 second
+                setTimeout(async () => {
+                    await this.sendCC(64, 64);
+                    this.log('🧪 Reset CC#64 to 64', 'info');
+                }, 1000);
+            }
+
+            async sendTestPC() {
+                this.debugLog('Sending test Program Change');
+                
+                if (!this.connected) {
+                    this.log('❌ Cannot send test PC - not connected', 'error');
+                    return;
+                }
+
+                // Send test program change to preset 1
+                await this.sendProgramChange(0);
+                this.log('🧪 Test Program Change sent: Preset 1', 'info');
+            }
+
+            clearLog() {
+                const logContainer = document.getElementById('midiLog');
+                logContainer.innerHTML = '';
+                this.log('🧹 Log cleared', 'info');
+            }
+
+            debugMonitoring() {
+                this.debugLog('Debug monitoring state');
+                
+                this.log(`📊 Monitoring Status: ${this.monitoring}`, 'info');
+                this.log(`📊 Input Device: ${this.inputDevice?.name || 'None'}`, 'info');
+                this.log(`📊 Use WebMidi.js: ${this.useWebMidiJS}`, 'info');
+                
+                if (this.inputDevice && this.monitoring) {
+                    this.log('🔍 Monitoring is active - try turning a knob on your pedal', 'info');
+                } else if (this.inputDevice && !this.monitoring) {
+                    this.log('⚠️ Input device available but monitoring inactive', 'info');
+                } else {
+                    this.log('❌ No input device available for monitoring', 'error');
+                }
+            }
+
             async connectDevice() {
+                this.uiLog('clicked', 'Connect Device button');
+                this.debugLog('Starting device connection process');
+                
                 try {
-                    this.log('Attempting to connect to device...', 'info');
-                    
                     let outputs, inputs;
                     
                     if (this.useWebMidiJS) {
                         outputs = WebMidi.outputs;
                         inputs = WebMidi.inputs;
-                        this.log(`WebMidi.js found ${outputs.length} output devices, ${inputs.length} input devices`, 'info');
+                        this.debugLog('Available devices via WebMidi.js', { 
+                            outputs: outputs.length, 
+                            inputs: inputs.length 
+                        });
                     } else {
                         outputs = Array.from(this.midiAccess.outputs.values());
                         inputs = Array.from(this.midiAccess.inputs.values());
-                        this.log(`Native MIDI API found ${outputs.length} output devices, ${inputs.length} input devices`, 'info');
+                        this.debugLog('Available devices via native MIDI', { 
+                            outputs: outputs.length, 
+                            inputs: inputs.length 
+                        });
                     }
                     
                     if (outputs.length === 0) {
                         throw new Error('No MIDI output devices found. Please check that your Chroma Console is connected and powered on.');
                     }
                     
-                    // Look for Chroma Console in available devices
+                    // Log all available devices
+                    this.debugLog('Available output devices', outputs.map(d => d.name));
+                    this.debugLog('Available input devices', inputs.map(d => d.name));
+                    
+                    // Look for Chroma Console
                     this.outputDevice = outputs.find(device => {
                         const name = device.name.toLowerCase();
                         return name.includes('chroma') || 
@@ -708,6 +890,13 @@
                         return name.includes('chroma') || 
                                name.includes('hologram') ||
                                name.includes('console');
+                    });
+
+                    this.debugLog('Device search results', {
+                        outputFound: !!this.outputDevice,
+                        inputFound: !!this.inputDevice,
+                        outputName: this.outputDevice?.name,
+                        inputName: this.inputDevice?.name
                     });
 
                     if (!this.outputDevice) {
@@ -730,6 +919,7 @@
                     await this.initializeDeviceState();
                     
                 } catch (error) {
+                    this.debugLog('Connection failed', { error: error.message });
                     this.log(`Connection failed: ${error.message}`, 'error');
                 }
             }
@@ -737,21 +927,30 @@
             startMonitoring() {
                 if (!this.inputDevice || this.monitoring) return;
 
+                this.debugLog('Starting monitoring', { device: this.inputDevice.name });
+
                 try {
                     if (this.useWebMidiJS) {
                         // WebMidi.js event handling
                         this.inputDevice.addListener('controlchange', (e) => {
+                            this.debugLog('Received CC via WebMidi.js', { cc: e.controller.number, value: e.value });
                             this.handleIncomingCC(e.controller.number, e.value);
                         });
                         
                         this.inputDevice.addListener('programchange', (e) => {
+                            this.debugLog('Received PC via WebMidi.js', { program: e.value });
                             this.handleIncomingProgramChange(e.value);
                         });
+
+                        this.debugLog('WebMidi.js listeners attached');
                     } else {
                         // Native Web MIDI API event handling
                         this.inputDevice.addEventListener('midimessage', (e) => {
+                            this.debugLog('Received MIDI message via native API', { data: Array.from(e.data) });
                             this.handleMidiMessage(e.data);
                         });
+
+                        this.debugLog('Native MIDI listeners attached');
                     }
 
                     this.monitoring = true;
@@ -760,12 +959,15 @@
                     this.log(`Live monitoring started on ${this.inputDevice.name}`, 'success');
                     
                 } catch (error) {
+                    this.debugLog('Failed to start monitoring', { error: error.message });
                     this.log(`Failed to start monitoring: ${error.message}`, 'error');
                 }
             }
 
             stopMonitoring() {
                 if (!this.inputDevice || !this.monitoring) return;
+
+                this.debugLog('Stopping monitoring');
 
                 try {
                     if (this.useWebMidiJS) {
@@ -781,6 +983,7 @@
                     this.log('Live monitoring stopped', 'info');
                     
                 } catch (error) {
+                    this.debugLog('Failed to stop monitoring', { error: error.message });
                     this.log(`Failed to stop monitoring: ${error.message}`, 'error');
                 }
             }
@@ -789,14 +992,23 @@
                 const [status, param1, param2] = data;
                 const messageType = status & 0xF0;
                 
+                this.debugLog('Processing MIDI message', { 
+                    raw: Array.from(data), 
+                    status: status.toString(16), 
+                    messageType: messageType.toString(16) 
+                });
+                
                 if (messageType === 0xB0) { // Control Change
                     this.handleIncomingCC(param1, param2);
                 } else if (messageType === 0xC0) { // Program Change
                     this.handleIncomingProgramChange(param1);
+                } else {
+                    this.debugLog('Unhandled MIDI message type', { messageType: messageType.toString(16) });
                 }
             }
 
             handleIncomingCC(ccNumber, value) {
+                this.debugLog('Handling incoming CC', { cc: ccNumber, value: value });
                 this.log(`← CC ${ccNumber}: ${value}`, 'midi');
                 
                 // Update UI for this parameter
@@ -807,11 +1019,13 @@
             }
 
             handleIncomingProgramChange(programNumber) {
-                this.log(`← Program Change: ${programNumber}`, 'midi');
-                // You could add preset name lookup here if you have a mapping
+                this.debugLog('Handling incoming Program Change', { program: programNumber });
+                this.log(`← Program Change: ${programNumber} (Preset ${programNumber + 1})`, 'midi');
             }
 
             updateUIForCC(ccNumber, value, fromDevice = false) {
+                this.debugLog('Updating UI for CC', { cc: ccNumber, value: value, fromDevice: fromDevice });
+                
                 // Find parameter by CC number
                 const param = Object.entries(this.parameters).find(([name, config]) => 
                     config.cc === ccNumber
@@ -833,12 +1047,18 @@
                             element.classList.add('updated');
                             setTimeout(() => element.classList.remove('updated'), 1000);
                         }
+
+                        this.debugLog('UI updated', { paramName: paramName, value: value });
+                    } else {
+                        this.debugLog('No UI element found for parameter', { paramName: paramName });
                     }
                     
                     // Update module selections if it's a module CC
                     if ([16, 17, 18, 19].includes(ccNumber)) {
                         this.updateModuleSelectionFromValue(ccNumber, value);
                     }
+                } else {
+                    this.debugLog('No parameter definition found for CC', { cc: ccNumber });
                 }
             }
 
@@ -851,7 +1071,12 @@
                 };
                 
                 const containerId = moduleMap[ccNumber];
-                if (!containerId) return;
+                if (!containerId) {
+                    this.debugLog('No module container found for CC', { cc: ccNumber });
+                    return;
+                }
+                
+                this.debugLog('Updating module selection', { cc: ccNumber, value: value, container: containerId });
                 
                 const container = document.getElementById(containerId);
                 const buttons = container.querySelectorAll('.module-button');
@@ -872,10 +1097,18 @@
                 // Update active state
                 buttons.forEach(b => b.classList.remove('active'));
                 closestButton.classList.add('active');
+
+                this.debugLog('Module selection updated', { 
+                    closestValue: closestButton.dataset.value,
+                    buttonText: closestButton.textContent 
+                });
             }
 
             async sendCC(ccNumber, value, withDelay = true) {
+                this.debugLog('Preparing to send CC', { cc: ccNumber, value: value, withDelay: withDelay });
+                
                 if (!this.connected || !this.outputDevice) {
+                    this.debugLog('Cannot send CC - not connected');
                     this.log('Device not connected', 'error');
                     return;
                 }
@@ -886,16 +1119,20 @@
                     }
 
                     if (this.useWebMidiJS) {
+                        this.debugLog('Sending CC via WebMidi.js');
                         this.outputDevice.sendControlChange(ccNumber, value);
                     } else {
+                        this.debugLog('Sending CC via native MIDI');
                         const message = [0xB0, ccNumber, value];
                         this.outputDevice.send(message);
                     }
                     
                     this.parameterCache.set(ccNumber, value);
                     this.log(`→ CC ${ccNumber}: ${value}`, 'success');
+                    this.debugLog('CC sent successfully');
                     
                 } catch (error) {
+                    this.debugLog('Failed to send CC', { error: error.message });
                     this.log(`Send failed: ${error.message}`, 'error');
                     this.connected = false;
                     this.updateConnectionStatus();
@@ -903,22 +1140,29 @@
             }
 
             async sendProgramChange(programNumber) {
+                this.debugLog('Preparing to send Program Change', { program: programNumber });
+                
                 if (!this.connected || !this.outputDevice) {
+                    this.debugLog('Cannot send PC - not connected');
                     this.log('Device not connected', 'error');
                     return;
                 }
 
                 try {
                     if (this.useWebMidiJS) {
+                        this.debugLog('Sending PC via WebMidi.js');
                         this.outputDevice.sendProgramChange(programNumber);
                     } else {
+                        this.debugLog('Sending PC via native MIDI');
                         const message = [0xC0, programNumber];
                         this.outputDevice.send(message);
                     }
                     
-                    this.log(`→ Program Change: ${programNumber}`, 'success');
+                    this.log(`→ Program Change: ${programNumber} (Preset ${programNumber + 1})`, 'success');
+                    this.debugLog('Program Change sent successfully');
                     
                 } catch (error) {
+                    this.debugLog('Failed to send Program Change', { error: error.message });
                     this.log(`Program change failed: ${error.message}`, 'error');
                 }
             }
@@ -927,19 +1171,23 @@
                 const container = document.getElementById('presetPedalControls');
                 container.innerHTML = '';
                 
-                // Generate buttons for presets 1-80 (Chroma Console has 80 presets)
+                // Generate buttons for presets 1-80
                 for (let i = 1; i <= 80; i++) {
                     const button = document.createElement('div');
                     button.className = 'preset-button';
                     button.textContent = i.toString();
                     button.addEventListener('click', () => {
+                        this.uiLog('clicked', `Preset ${i} button`);
                         this.sendProgramChange(i - 1); // MIDI program change is 0-based
                     });
                     container.appendChild(button);
                 }
+
+                this.debugLog('Generated preset buttons', { count: 80 });
             }
 
             async initializeDeviceState() {
+                this.debugLog('Initializing device state');
                 this.log('Initializing device state...', 'success');
                 
                 // Send all current parameter values to device
@@ -959,9 +1207,12 @@
                 this.updateModuleSelection('textureModules', 19);
                 
                 this.log('Device state synchronized', 'success');
+                this.debugLog('Device initialization complete');
             }
 
             initializeUI() {
+                this.debugLog('Initializing UI');
+                
                 // Initialize sliders
                 Object.entries(this.parameters).forEach(([paramName, config]) => {
                     const slider = document.getElementById(paramName);
@@ -975,6 +1226,8 @@
                         
                         slider.addEventListener('input', (e) => {
                             const value = parseInt(e.target.value);
+                            this.uiLog('slider moved', paramName, value);
+                            
                             if (valueDisplay) {
                                 valueDisplay.textContent = value;
                             }
@@ -992,6 +1245,7 @@
                 // Initialize buttons
                 document.getElementById('connectBtn').addEventListener('click', () => {
                     if (this.connected) {
+                        this.uiLog('clicked', 'Disconnect button');
                         this.disconnect();
                     } else {
                         this.connectDevice();
@@ -999,38 +1253,49 @@
                 });
 
                 document.getElementById('refreshMidi').addEventListener('click', () => {
+                    this.uiLog('clicked', 'Refresh MIDI button');
                     this.refreshMIDI();
                 });
 
                 document.getElementById('savePreset').addEventListener('click', () => {
+                    this.uiLog('clicked', 'Save Preset button');
                     this.savePreset();
                 });
 
                 document.getElementById('loadFile').addEventListener('click', () => {
+                    this.uiLog('clicked', 'Load File button');
                     document.getElementById('fileInput').click();
                 });
 
                 document.getElementById('exportPresets').addEventListener('click', () => {
+                    this.uiLog('clicked', 'Export Presets button');
                     this.exportPresets();
                 });
 
                 document.getElementById('fileInput').addEventListener('change', (e) => {
+                    this.uiLog('file selected', 'file input');
                     this.importPresets(e.target.files[0]);
                 });
+
+                this.debugLog('UI initialization complete');
             }
 
             initializeModuleSelector(containerId, ccNumber) {
+                this.debugLog('Initializing module selector', { container: containerId, cc: ccNumber });
+                
                 const container = document.getElementById(containerId);
                 const buttons = container.querySelectorAll('.module-button');
                 
                 buttons.forEach(button => {
                     button.addEventListener('click', () => {
+                        const value = parseInt(button.dataset.value);
+                        this.uiLog('clicked', `${containerId} ${button.textContent} button`, value);
+                        
                         // Remove active class from siblings
                         buttons.forEach(b => b.classList.remove('active'));
                         // Add active class to clicked button
                         button.classList.add('active');
                         
-                        const value = parseInt(button.dataset.value);
                         this.sendCC(ccNumber, value);
                         this.parameterCache.set(ccNumber, value);
                     });
@@ -1066,7 +1331,7 @@
 
             getCurrentState() {
                 const state = {
-                    version: "2.0",
+                    version: "2.1",
                     timestamp: new Date().toISOString(),
                     device: {
                         name: this.outputDevice?.name || "Unknown",
@@ -1089,6 +1354,7 @@
             }
 
             async loadState(state) {
+                this.uiLog('loading state', 'preset', state.name);
                 this.log(`Loading preset: ${state.name || 'Unnamed'}`, 'success');
                 
                 // Update UI elements
@@ -1151,6 +1417,7 @@
                     
                     item.addEventListener('click', (e) => {
                         if (!e.target.classList.contains('delete-preset')) {
+                            this.uiLog('clicked', `preset ${preset.name}`);
                             this.loadState(preset);
                         }
                     });
@@ -1235,6 +1502,7 @@
             }
 
             disconnect() {
+                this.debugLog('Disconnecting from device');
                 this.stopMonitoring();
                 this.connected = false;
                 this.outputDevice = null;
@@ -1244,6 +1512,7 @@
             }
 
             async refreshMIDI() {
+                this.debugLog('Refreshing MIDI system');
                 this.log('Refreshing MIDI system...', 'info');
                 
                 // Reset connection state
@@ -1283,7 +1552,6 @@
                     const deviceNumber = parseInt(selection);
                     if (!isNaN(deviceNumber) && deviceNumber >= 1 && deviceNumber <= outputs.length) {
                         selectedOutput = outputs[deviceNumber - 1];
-                        // Try to find matching input
                         selectedInput = inputs.find(input => input.name === selectedOutput.name);
                     } else {
                         selectedOutput = outputs.find(output => 
@@ -1300,6 +1568,11 @@
                         this.connected = true;
                         this.updateConnectionStatus();
                         this.log(`Connected to ${this.outputDevice.name}`, 'success');
+                        
+                        this.debugLog('Manual device selection', {
+                            output: this.outputDevice.name,
+                            input: this.inputDevice?.name || 'None'
+                        });
                         
                         if (this.inputDevice) {
                             this.startMonitoring();
@@ -1323,15 +1596,15 @@
                 logContainer.appendChild(entry);
                 logContainer.scrollTop = logContainer.scrollHeight;
                 
-                // Keep only last 50 entries
-                while (logContainer.children.length > 50) {
+                // Keep only last 100 entries
+                while (logContainer.children.length > 100) {
                     logContainer.removeChild(logContainer.firstChild);
                 }
             }
         }
 
-        // Initialize the enhanced editor
-        const editor = new EnhancedChromaConsoleEditor();
+        // Initialize the debug enhanced editor
+        const editor = new DebugEnhancedChromaEditor();
         editor.initialize();
     </script>
 </body>
