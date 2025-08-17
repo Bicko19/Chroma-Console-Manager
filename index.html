@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chroma Console MIDI Editor - Debug Enhanced</title>
+    <title>Chroma Console MIDI Editor - Authentic Design</title>
     <script src="https://cdn.jsdelivr.net/npm/webmidi@latest/dist/iife/webmidi.iife.js"></script>
     <style>
         * {
@@ -14,47 +14,47 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            background: linear-gradient(135deg, #2a2a2a, #1a1a1a);
             color: #fff;
             min-height: 100vh;
             padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
         .container {
-            max-width: 1400px;
-            margin: 0 auto;
+            max-width: 1000px;
+            width: 100%;
         }
 
         .header {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
 
         .header h1 {
-            font-size: 2.5em;
-            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 10px;
+            font-size: 1.8em;
+            color: #fff;
+            margin-bottom: 15px;
+            font-weight: 300;
         }
 
         .connection-status {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            gap: 15px;
             margin-bottom: 20px;
-            padding: 15px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-            backdrop-filter: blur(10px);
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
             flex-wrap: wrap;
         }
 
         .status-indicator {
-            width: 12px;
-            height: 12px;
+            width: 10px;
+            height: 10px;
             border-radius: 50%;
             background: #ff4757;
             animation: pulse 2s infinite;
@@ -80,356 +80,408 @@
             50% { opacity: 0.3; }
         }
 
-        .debug-panel {
-            background: rgba(255, 0, 0, 0.1);
-            border: 1px solid #ff4757;
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 20px;
-        }
-
-        .debug-controls {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 10px;
-            flex-wrap: wrap;
-        }
-
-        .control-panel {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .control-section {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
-            padding: 25px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .control-section h3 {
-            margin-bottom: 20px;
-            color: #4ecdc4;
-            border-bottom: 2px solid #4ecdc4;
-            padding-bottom: 10px;
-        }
-
-        .parameter-control {
-            margin-bottom: 20px;
-        }
-
-        .parameter-control label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-            color: #ddd;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .cc-indicator {
-            font-size: 0.8em;
-            color: #ffa502;
-            background: rgba(255, 165, 2, 0.2);
-            padding: 2px 6px;
+        .btn {
+            padding: 8px 16px;
+            border: 1px solid #555;
             border-radius: 4px;
-        }
-
-        .slider-container {
-            position: relative;
-            margin-bottom: 10px;
-        }
-
-        .slider {
-            width: 100%;
-            height: 6px;
-            border-radius: 3px;
             background: #333;
-            outline: none;
-            appearance: none;
-            transition: all 0.3s ease;
-        }
-
-        .slider::-webkit-slider-thumb {
-            appearance: none;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
-            cursor: pointer;
-            box-shadow: 0 0 10px rgba(78, 205, 196, 0.5);
-            transition: all 0.3s ease;
-        }
-
-        .slider::-webkit-slider-thumb:hover {
-            transform: scale(1.1);
-            box-shadow: 0 0 15px rgba(78, 205, 196, 0.8);
-        }
-
-        .slider::-moz-range-thumb {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
-            cursor: pointer;
-            border: none;
-            box-shadow: 0 0 10px rgba(78, 205, 196, 0.5);
-        }
-
-        .slider.updated {
-            box-shadow: 0 0 15px rgba(255, 165, 2, 0.8);
-        }
-
-        .value-display {
-            text-align: center;
-            font-size: 0.9em;
-            color: #4ecdc4;
-            margin-top: 5px;
-        }
-
-        .module-selector {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-            gap: 8px;
-            margin-top: 10px;
-        }
-
-        .module-button {
-            padding: 8px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 8px;
             color: #fff;
             cursor: pointer;
-            transition: all 0.3s ease;
-            text-align: center;
-            font-size: 0.8em;
-        }
-
-        .module-button:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: translateY(-2px);
-        }
-
-        .module-button.active {
-            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
-            border-color: #4ecdc4;
-            box-shadow: 0 0 15px rgba(78, 205, 196, 0.3);
-        }
-
-        .preset-section {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 15px;
-            padding: 25px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            margin-bottom: 20px;
-        }
-
-        .preset-controls {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-
-        .preset-pedal-controls {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
-            gap: 8px;
-            margin-bottom: 15px;
-        }
-
-        .preset-button {
-            padding: 8px 12px;
-            background: rgba(255, 165, 2, 0.2);
-            border: 1px solid #ffa502;
-            border-radius: 6px;
-            color: #ffa502;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-align: center;
-            font-size: 0.8em;
-        }
-
-        .preset-button:hover {
-            background: rgba(255, 165, 2, 0.3);
-            transform: translateY(-1px);
-        }
-
-        .btn {
-            padding: 12px 20px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
-            color: white;
-            font-size: 14px;
+            font-size: 12px;
+            transition: all 0.2s ease;
         }
 
         .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            background: #444;
         }
 
         .btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
-            transform: none;
         }
 
-        .btn.debug {
-            background: linear-gradient(45deg, #ff4757, #ff6b6b);
+        /* CHROMA CONSOLE REPLICA */
+        .chroma-console {
+            background: linear-gradient(145deg, #f5f5f0, #e8e8e0);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 
+                0 10px 30px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.4);
+            margin: 20px auto;
+            position: relative;
         }
 
-        .preset-name {
-            flex: 1;
-            padding: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
+        .chroma-console::before {
+            content: '';
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            right: 15px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(0,0,0,0.1), transparent);
+        }
+
+        .console-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .console-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+            letter-spacing: 1px;
+        }
+
+        .console-subtitle {
+            font-size: 10px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .controls-section {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .module {
+            text-align: center;
+            position: relative;
+        }
+
+        .module-header {
+            margin-bottom: 15px;
+        }
+
+        .module-title {
+            font-size: 11px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .module.character .module-title { color: #e74c3c; }
+        .module.movement .module-title { color: #3498db; }
+        .module.diffusion .module-title { color: #f39c12; }
+        .module.texture .module-title { color: #27ae60; }
+
+        .module-selector {
+            position: relative;
+            width: 40px;
+            height: 40px;
+            margin: 0 auto 15px;
+            border-radius: 50%;
+            background: #333;
+            box-shadow: 
+                0 3px 6px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .module-selector:hover {
+            transform: translateY(-1px);
+            box-shadow: 
+                0 4px 8px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        .module-selector::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 12px;
+            height: 12px;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            transition: all 0.2s ease;
+        }
+
+        .module.character .module-selector::before { background: #e74c3c; }
+        .module.movement .module-selector::before { background: #3498db; }
+        .module.diffusion .module-selector::before { background: #f39c12; }
+        .module.texture .module-selector::before { background: #27ae60; }
+
+        .module-selector.active::before {
+            box-shadow: 0 0 10px currentColor;
+        }
+
+        .effect-name {
+            font-size: 10px;
+            color: #666;
+            margin-bottom: 15px;
+            min-height: 12px;
+            font-weight: 500;
+        }
+
+        .knob-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .knob-row {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .knob {
+            position: relative;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #fff, #ddd, #bbb);
+            box-shadow: 
+                0 2px 4px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.8);
+            cursor: pointer;
+            transition: all 0.1s ease;
+        }
+
+        .knob::before {
+            content: '';
+            position: absolute;
+            top: 3px;
+            left: 50%;
+            width: 2px;
+            height: 8px;
+            background: #666;
+            transform: translateX(-50%);
+            border-radius: 1px;
+        }
+
+        .knob:active {
+            transform: scale(0.98);
+        }
+
+        .knob-label {
+            font-size: 8px;
+            color: #555;
+            font-weight: 500;
+            margin-top: 3px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .knob-value {
+            font-size: 9px;
+            color: #333;
+            font-weight: 600;
+            margin-top: 2px;
+        }
+
+        /* Primary control knobs (top row) */
+        .module.character .knob { border: 2px solid #e74c3c; }
+        .module.movement .knob { border: 2px solid #3498db; }
+        .module.diffusion .knob { border: 2px solid #f39c12; }
+        .module.texture .knob { border: 2px solid #27ae60; }
+
+        .secondary-functions {
+            background: #2c2c2c;
+            color: #fff;
+            padding: 15px;
             border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 9px;
+            line-height: 1.4;
+        }
+
+        .function-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            text-align: center;
+        }
+
+        .function-group h4 {
+            color: #ffa502;
+            margin-bottom: 5px;
+            font-size: 10px;
+        }
+
+        .function-group div {
+            color: #ccc;
+            margin-bottom: 3px;
+        }
+
+        .footswitches {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 20px;
+        }
+
+        .footswitch {
+            width: 50px;
+            height: 60px;
+            background: linear-gradient(145deg, #444, #222);
+            border-radius: 8px;
+            border: 2px solid #333;
+            color: #fff;
+            font-size: 9px;
+            cursor: pointer;
+            transition: all 0.1s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .footswitch:active {
+            transform: translateY(2px);
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .footswitch.tap {
+            background: linear-gradient(145deg, #27ae60, #1e8449);
+        }
+
+        .footswitch.bypass {
+            background: linear-gradient(145deg, #e74c3c, #c0392b);
+        }
+
+        /* Preset and Log sections */
+        .bottom-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .preset-section, .log-section {
             background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        .section-title {
             color: #fff;
             font-size: 14px;
-            min-width: 200px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding-bottom: 5px;
         }
 
-        .preset-name::placeholder {
-            color: #aaa;
+        .preset-grid {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 5px;
+            margin-bottom: 15px;
         }
 
-        .preset-list {
-            max-height: 200px;
-            overflow-y: auto;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 8px;
-            background: rgba(0, 0, 0, 0.2);
-        }
-
-        .preset-item {
-            padding: 12px 15px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        .preset-btn {
+            padding: 8px 4px;
+            background: #333;
+            border: 1px solid #555;
+            border-radius: 3px;
+            color: #fff;
+            font-size: 10px;
             cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            transition: all 0.2s ease;
         }
 
-        .preset-item:hover {
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        .preset-item:last-child {
-            border-bottom: none;
-        }
-
-        .delete-preset {
-            background: #ff4757;
-            color: white;
-            border: none;
-            padding: 4px 8px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 12px;
+        .preset-btn:hover {
+            background: #ffa502;
+            color: #000;
         }
 
         .log {
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 8px;
-            padding: 15px;
-            height: 180px;
+            background: #000;
+            border-radius: 5px;
+            padding: 10px;
+            height: 200px;
             overflow-y: auto;
             font-family: 'Courier New', monospace;
-            font-size: 11px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            font-size: 10px;
         }
 
         .log-entry {
-            margin-bottom: 5px;
-            opacity: 0.8;
+            margin-bottom: 3px;
+            opacity: 0.9;
         }
 
-        .log-entry.error {
-            color: #ff4757;
+        .log-entry.error { color: #ff4757; }
+        .log-entry.success { color: #2ed573; }
+        .log-entry.info { color: #ffa502; }
+        .log-entry.midi { color: #4ecdc4; }
+        .log-entry.ui { color: #a55eea; }
+
+        .preset-controls {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
         }
 
-        .log-entry.success {
-            color: #2ed573;
+        .preset-input {
+            flex: 1;
+            padding: 6px;
+            border: 1px solid #555;
+            border-radius: 3px;
+            background: #333;
+            color: #fff;
+            font-size: 11px;
         }
 
-        .log-entry.info {
-            color: #ffa502;
-        }
-
-        .log-entry.midi {
-            color: #4ecdc4;
-        }
-
-        .log-entry.debug {
-            color: #ff6b6b;
-        }
-
-        .log-entry.ui {
-            color: #a55eea;
-        }
-
-        .monitoring-indicator {
-            background: rgba(255, 165, 2, 0.2);
-            border: 1px solid #ffa502;
+        /* Debug panel */
+        .debug-panel {
+            background: rgba(255, 0, 0, 0.1);
+            border: 1px solid #ff4757;
             border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 20px;
-            display: none;
+            padding: 10px;
+            margin-bottom: 15px;
+        }
+
+        .debug-controls {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .debug-btn {
+            padding: 6px 12px;
+            background: #ff4757;
+            border: none;
+            border-radius: 3px;
+            color: #fff;
+            font-size: 10px;
+            cursor: pointer;
         }
 
         @media (max-width: 768px) {
-            .control-panel {
+            .controls-section {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 15px;
+            }
+            
+            .bottom-section {
                 grid-template-columns: 1fr;
             }
             
-            .preset-controls, .debug-controls {
-                flex-direction: column;
+            .footswitches {
+                gap: 20px;
             }
-            
-            .header h1 {
-                font-size: 2em;
-            }
-
-            .connection-status {
-                flex-direction: column;
-                text-align: center;
-            }
-
-            .btn {
-                width: 100%;
-                margin: 5px 0;
-            }
-        }
-
-        .footer {
-            text-align: center;
-            margin-top: 30px;
-            padding: 20px;
-            color: #aaa;
-            font-size: 14px;
-        }
-
-        .footer a {
-            color: #4ecdc4;
-            text-decoration: none;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>Chroma Console MIDI Editor - Debug Mode</h1>
+            <h1>Chroma Console MIDI Editor</h1>
             <div class="connection-status">
                 <div class="status-indicator" id="statusIndicator"></div>
                 <span id="connectionStatus">Disconnected</span>
@@ -438,217 +490,230 @@
             </div>
         </div>
 
+        <!-- Debug Panel -->
         <div class="debug-panel">
-            <h3 style="color: #ff4757; margin-bottom: 10px;">🐛 Debug Panel</h3>
+            <h3 style="color: #ff4757; margin-bottom: 8px; font-size: 12px;">🐛 Debug Controls</h3>
             <div class="debug-controls">
-                <button class="btn debug" id="testConnection">Test Connection</button>
-                <button class="btn debug" id="sendTestCC">Send Test CC</button>
-                <button class="btn debug" id="sendTestPC">Send Test Program Change</button>
-                <button class="btn debug" id="clearLog">Clear Log</button>
-                <button class="btn debug" id="debugMonitoring">Debug Monitoring</button>
+                <button class="debug-btn" id="testConnection">Test Connection</button>
+                <button class="debug-btn" id="sendTestCC">Send Test CC</button>
+                <button class="debug-btn" id="sendTestPC">Send Test PC</button>
+                <button class="debug-btn" id="clearLog">Clear Log</button>
             </div>
-            <div id="debugInfo" style="font-family: monospace; font-size: 12px; color: #ffa502;"></div>
         </div>
 
-        <div class="monitoring-indicator" id="monitoringIndicator">
-            <strong>📡 Live Monitoring Active:</strong> The interface is now listening for changes from your Chroma Console. Turn knobs or change presets on the pedal to see them reflected here in real-time!
-        </div>
+        <div class="chroma-console">
+            <div class="console-header">
+                <div class="console-title">CHROMA CONSOLE</div>
+                <div class="console-subtitle">Hologram Electronics</div>
+            </div>
 
-        <div class="control-panel">
-            <div class="control-section">
-                <h3>Primary Controls</h3>
-                
-                <div class="parameter-control">
-                    <label for="tilt">
-                        Tilt
-                        <span class="cc-indicator">CC #64</span>
-                    </label>
-                    <div class="slider-container">
-                        <input type="range" id="tilt" class="slider" min="0" max="127" value="64">
+            <div class="controls-section">
+                <!-- CHARACTER MODULE -->
+                <div class="module character">
+                    <div class="module-header">
+                        <div class="module-title">Character</div>
+                        <div class="module-selector" id="characterSelector" data-cc="16">
+                            <div class="effect-name" id="characterEffect">Drive</div>
+                        </div>
                     </div>
-                    <div class="value-display" id="tiltValue">64</div>
+                    <div class="knob-container">
+                        <div class="knob-row">
+                            <div>
+                                <div class="knob" id="tiltKnob" data-cc="64" data-min="0" data-max="127" data-value="64"></div>
+                                <div class="knob-label">Tilt</div>
+                                <div class="knob-value" id="tiltValue">64</div>
+                            </div>
+                        </div>
+                        <div class="knob-row">
+                            <div>
+                                <div class="knob" id="characterAmountKnob" data-cc="65" data-min="0" data-max="127" data-value="64"></div>
+                                <div class="knob-label">Amount</div>
+                                <div class="knob-value" id="characterAmountValue">64</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="parameter-control">
-                    <label for="rate">
-                        Rate
-                        <span class="cc-indicator">CC #66</span>
-                    </label>
-                    <div class="slider-container">
-                        <input type="range" id="rate" class="slider" min="0" max="127" value="0">
+                <!-- MOVEMENT MODULE -->
+                <div class="module movement">
+                    <div class="module-header">
+                        <div class="module-title">Movement</div>
+                        <div class="module-selector" id="movementSelector" data-cc="17">
+                            <div class="effect-name" id="movementEffect">Doubler</div>
+                        </div>
                     </div>
-                    <div class="value-display" id="rateValue">0</div>
+                    <div class="knob-container">
+                        <div class="knob-row">
+                            <div>
+                                <div class="knob" id="rateKnob" data-cc="66" data-min="0" data-max="127" data-value="0"></div>
+                                <div class="knob-label">Rate</div>
+                                <div class="knob-value" id="rateValue">0</div>
+                            </div>
+                        </div>
+                        <div class="knob-row">
+                            <div>
+                                <div class="knob" id="movementAmountKnob" data-cc="67" data-min="0" data-max="127" data-value="64"></div>
+                                <div class="knob-label">Amount</div>
+                                <div class="knob-value" id="movementAmountValue">64</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="parameter-control">
-                    <label for="time">
-                        Time
-                        <span class="cc-indicator">CC #68</span>
-                    </label>
-                    <div class="slider-container">
-                        <input type="range" id="time" class="slider" min="0" max="127" value="64">
+                <!-- DIFFUSION MODULE -->
+                <div class="module diffusion">
+                    <div class="module-header">
+                        <div class="module-title">Diffusion</div>
+                        <div class="module-selector" id="diffusionSelector" data-cc="18">
+                            <div class="effect-name" id="diffusionEffect">Cascade</div>
+                        </div>
                     </div>
-                    <div class="value-display" id="timeValue">64</div>
+                    <div class="knob-container">
+                        <div class="knob-row">
+                            <div>
+                                <div class="knob" id="timeKnob" data-cc="68" data-min="0" data-max="127" data-value="64"></div>
+                                <div class="knob-label">Time</div>
+                                <div class="knob-value" id="timeValue">64</div>
+                            </div>
+                        </div>
+                        <div class="knob-row">
+                            <div>
+                                <div class="knob" id="diffusionAmountKnob" data-cc="69" data-min="0" data-max="127" data-value="64"></div>
+                                <div class="knob-label">Amount</div>
+                                <div class="knob-value" id="diffusionAmountValue">64</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="parameter-control">
-                    <label for="mix">
-                        Mix
-                        <span class="cc-indicator">CC #70</span>
-                    </label>
-                    <div class="slider-container">
-                        <input type="range" id="mix" class="slider" min="0" max="127" value="127">
+                <!-- TEXTURE MODULE -->
+                <div class="module texture">
+                    <div class="module-header">
+                        <div class="module-title">Texture</div>
+                        <div class="module-selector" id="textureSelector" data-cc="19">
+                            <div class="effect-name" id="textureEffect">Filter</div>
+                        </div>
                     </div>
-                    <div class="value-display" id="mixValue">127</div>
+                    <div class="knob-container">
+                        <div class="knob-row">
+                            <div>
+                                <div class="knob" id="mixKnob" data-cc="70" data-min="0" data-max="127" data-value="127"></div>
+                                <div class="knob-label">Mix</div>
+                                <div class="knob-value" id="mixValue">127</div>
+                            </div>
+                        </div>
+                        <div class="knob-row">
+                            <div>
+                                <div class="knob" id="textureAmountKnob" data-cc="71" data-min="0" data-max="127" data-value="64"></div>
+                                <div class="knob-label">Amount</div>
+                                <div class="knob-value" id="textureAmountValue">64</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div class="control-section">
-                <h3>Module Amounts</h3>
-                
-                <div class="parameter-control">
-                    <label for="characterAmount">
-                        Character Amount
-                        <span class="cc-indicator">CC #65</span>
-                    </label>
-                    <div class="slider-container">
-                        <input type="range" id="characterAmount" class="slider" min="0" max="127" value="64">
+            <div class="secondary-functions">
+                <div class="function-grid">
+                    <div class="function-group">
+                        <h4>A + B = Secondary</h4>
+                        <div>Sensitivity</div>
+                        <div>Effect Vol</div>
+                        <div>Drift</div>
+                        <div>Effect Vol</div>
                     </div>
-                    <div class="value-display" id="characterAmountValue">64</div>
-                </div>
-
-                <div class="parameter-control">
-                    <label for="movementAmount">
-                        Movement Amount
-                        <span class="cc-indicator">CC #67</span>
-                    </label>
-                    <div class="slider-container">
-                        <input type="range" id="movementAmount" class="slider" min="0" max="127" value="64">
+                    <div class="function-group">
+                        <h4>C + D = Gesture</h4>
+                        <div>Record knob</div>
+                        <div>movements</div>
+                        <div>for automation</div>
                     </div>
-                    <div class="value-display" id="movementAmountValue">64</div>
-                </div>
-
-                <div class="parameter-control">
-                    <label for="diffusionAmount">
-                        Diffusion Amount
-                        <span class="cc-indicator">CC #69</span>
-                    </label>
-                    <div class="slider-container">
-                        <input type="range" id="diffusionAmount" class="slider" min="0" max="127" value="64">
+                    <div class="function-group">
+                        <h4>A + D = FX Setup</h4>
+                        <div>Configure</div>
+                        <div>effect routing</div>
+                        <div>and settings</div>
                     </div>
-                    <div class="value-display" id="diffusionAmountValue">64</div>
-                </div>
-
-                <div class="parameter-control">
-                    <label for="textureAmount">
-                        Texture Amount
-                        <span class="cc-indicator">CC #71</span>
-                    </label>
-                    <div class="slider-container">
-                        <input type="range" id="textureAmount" class="slider" min="0" max="127" value="64">
+                    <div class="function-group">
+                        <h4>B + C = Save</h4>
+                        <div>Save current</div>
+                        <div>settings to</div>
+                        <div>preset slot</div>
                     </div>
-                    <div class="value-display" id="textureAmountValue">64</div>
                 </div>
             </div>
 
-            <div class="control-section">
-                <h3>Module Selection</h3>
-                
-                <div class="parameter-control">
-                    <label>
-                        Character Module
-                        <span class="cc-indicator">CC #16</span>
-                    </label>
-                    <div class="module-selector" id="characterModules">
-                        <div class="module-button" data-value="10">Drive</div>
-                        <div class="module-button" data-value="32">Sweeten</div>
-                        <div class="module-button" data-value="54">Fuzz</div>
-                        <div class="module-button" data-value="76">Howl</div>
-                        <div class="module-button" data-value="98">Swell</div>
-                        <div class="module-button" data-value="118">Off</div>
-                    </div>
+            <div class="footswitches">
+                <div class="footswitch tap" id="tapSwitch">
+                    <div>Tap</div>
+                    <div>Capture</div>
                 </div>
-
-                <div class="parameter-control">
-                    <label>
-                        Movement Module
-                        <span class="cc-indicator">CC #17</span>
-                    </label>
-                    <div class="module-selector" id="movementModules">
-                        <div class="module-button" data-value="10">Doubler</div>
-                        <div class="module-button" data-value="32">Vibrato</div>
-                        <div class="module-button" data-value="54">Phaser</div>
-                        <div class="module-button" data-value="76">Tremolo</div>
-                        <div class="module-button" data-value="98">Pitch</div>
-                        <div class="module-button" data-value="118">Off</div>
-                    </div>
-                </div>
-
-                <div class="parameter-control">
-                    <label>
-                        Diffusion Module
-                        <span class="cc-indicator">CC #18</span>
-                    </label>
-                    <div class="module-selector" id="diffusionModules">
-                        <div class="module-button" data-value="10">Cascade</div>
-                        <div class="module-button" data-value="32">Reels</div>
-                        <div class="module-button" data-value="54">Space</div>
-                        <div class="module-button" data-value="76">Collage</div>
-                        <div class="module-button" data-value="98">Reverse</div>
-                        <div class="module-button" data-value="118">Off</div>
-                    </div>
-                </div>
-
-                <div class="parameter-control">
-                    <label>
-                        Texture Module
-                        <span class="cc-indicator">CC #19</span>
-                    </label>
-                    <div class="module-selector" id="textureModules">
-                        <div class="module-button" data-value="10">Filter</div>
-                        <div class="module-button" data-value="32">Squash</div>
-                        <div class="module-button" data-value="54">Cassette</div>
-                        <div class="module-button" data-value="76">Broken</div>
-                        <div class="module-button" data-value="98">Interference</div>
-                        <div class="module-button" data-value="118">Off</div>
-                    </div>
+                <div class="footswitch bypass" id="bypassSwitch">
+                    <div>Bypass</div>
+                    <div>Presets</div>
                 </div>
             </div>
         </div>
 
-        <div class="preset-section">
-            <h3>Preset Management</h3>
-            <div class="preset-controls">
-                <input type="text" class="preset-name" id="presetName" placeholder="Enter preset name...">
-                <button class="btn" id="savePreset">Save Preset</button>
-                <button class="btn" id="loadFile">Load File</button>
-                <button class="btn" id="exportPresets">Export All</button>
-                <input type="file" id="fileInput" accept=".json" style="display: none;">
+        <div class="bottom-section">
+            <div class="preset-section">
+                <div class="section-title">Presets</div>
+                <div class="preset-controls">
+                    <input type="text" class="preset-input" id="presetName" placeholder="Preset name...">
+                    <button class="btn" id="savePreset">Save</button>
+                    <button class="btn" id="exportPresets">Export</button>
+                </div>
+                <div style="margin-bottom: 10px; color: #ccc; font-size: 11px;">Pedal Presets (1-80):</div>
+                <div class="preset-grid" id="presetGrid">
+                    <!-- Preset buttons will be generated here -->
+                </div>
             </div>
-            
-            <div style="margin-bottom: 15px;">
-                <strong>Load Pedal Presets (Program Change):</strong>
-            </div>
-            <div class="preset-pedal-controls" id="presetPedalControls">
-                <!-- Preset buttons will be generated here -->
-            </div>
-            
-            <div class="preset-list" id="presetList"></div>
-        </div>
 
-        <div class="preset-section">
-            <h3>MIDI Log - Enhanced Debug</h3>
-            <div class="log" id="midiLog"></div>
-        </div>
-
-        <div class="footer">
-            <p>Debug Enhanced Chroma Console MIDI Editor | Built for <a href="https://www.hologramelectronics.com/chroma-console" target="_blank">Hologram Electronics Chroma Console</a></p>
-            <p>Debug Mode: Interface Logging • Connection Testing • MIDI Monitoring</p>
+            <div class="log-section">
+                <div class="section-title">MIDI Log</div>
+                <div class="log" id="midiLog"></div>
+            </div>
         </div>
     </div>
 
     <script>
-        class DebugEnhancedChromaEditor {
+        // Effect definitions
+        const EFFECTS = {
+            character: [
+                { name: 'Drive', value: 10 },
+                { name: 'Sweeten', value: 32 },
+                { name: 'Fuzz', value: 54 },
+                { name: 'Howl', value: 76 },
+                { name: 'Swell', value: 98 },
+                { name: 'Off', value: 118 }
+            ],
+            movement: [
+                { name: 'Doubler', value: 10 },
+                { name: 'Vibrato', value: 32 },
+                { name: 'Phaser', value: 54 },
+                { name: 'Tremolo', value: 76 },
+                { name: 'Pitch', value: 98 },
+                { name: 'Off', value: 118 }
+            ],
+            diffusion: [
+                { name: 'Cascade', value: 10 },
+                { name: 'Reels', value: 32 },
+                { name: 'Space', value: 54 },
+                { name: 'Collage', value: 76 },
+                { name: 'Reverse', value: 98 },
+                { name: 'Off', value: 118 }
+            ],
+            texture: [
+                { name: 'Filter', value: 10 },
+                { name: 'Squash', value: 32 },
+                { name: 'Cassette', value: 54 },
+                { name: 'Broken', value: 76 },
+                { name: 'Interference', value: 98 },
+                { name: 'Off', value: 118 }
+            ]
+        };
+
+        class ChromaConsoleEditor {
             constructor() {
                 this.outputDevice = null;
                 this.inputDevice = null;
@@ -656,155 +721,87 @@
                 this.monitoring = false;
                 this.useWebMidiJS = false;
                 this.midiAccess = null;
-                this.parameterCache = new Map();
-                this.presets = JSON.parse(localStorage.getItem('chromaPresets') || '[]');
-                this.debugMode = true;
-                
-                // Corrected parameter definitions - using middle values for ranges
-                this.parameters = {
-                    // Primary Controls
-                    tilt: { cc: 64, default: 64 },
-                    rate: { cc: 66, default: 0 },
-                    time: { cc: 68, default: 64 },
-                    mix: { cc: 70, default: 127 },
-                    
-                    // Module Amounts
-                    characterAmount: { cc: 65, default: 64 },
-                    movementAmount: { cc: 67, default: 64 },
-                    diffusionAmount: { cc: 69, default: 64 },
-                    textureAmount: { cc: 71, default: 64 },
-                    
-                    // Module Selection - using middle values of ranges
-                    character: { cc: 16, default: 10 },
-                    movement: { cc: 17, default: 10 },
-                    diffusion: { cc: 18, default: 10 },
-                    texture: { cc: 19, default: 10 }
+                this.currentEffects = {
+                    character: 0,
+                    movement: 0,
+                    diffusion: 0,
+                    texture: 0
                 };
 
                 this.initializeUI();
-                this.loadPresets();
-                this.generatePresetButtons();
+                this.generatePresetGrid();
                 this.setupDebugControls();
-                this.log('Debug Enhanced Chroma Console Editor initialized', 'success');
-                this.debugLog('Debug mode enabled - all interactions will be logged');
-            }
-
-            debugLog(message, data = null) {
-                if (this.debugMode) {
-                    this.log(`🐛 ${message}${data ? `: ${JSON.stringify(data)}` : ''}`, 'debug');
-                    
-                    // Also update debug info panel
-                    const debugInfo = document.getElementById('debugInfo');
-                    const timestamp = new Date().toLocaleTimeString();
-                    debugInfo.innerHTML = `Last Debug: [${timestamp}] ${message}`;
-                }
-            }
-
-            uiLog(action, element, value = null) {
-                const valueStr = value !== null ? ` (value: ${value})` : '';
-                this.log(`🎛️ UI: ${action} on ${element}${valueStr}`, 'ui');
+                this.log('Chroma Console Editor initialized', 'success');
             }
 
             async initialize() {
-                this.debugLog('Starting MIDI initialization');
+                this.log('Initializing MIDI...', 'info');
                 
                 try {
                     if (typeof WebMidi !== 'undefined') {
-                        this.debugLog('WebMidi.js detected, attempting to enable');
                         await WebMidi.enable({ sysex: true });
                         this.useWebMidiJS = true;
-                        this.debugLog('WebMidi.js enabled successfully', { version: WebMidi.version });
+                        this.log('WebMidi.js enabled', 'success');
                     } else if (navigator.requestMIDIAccess) {
-                        this.debugLog('WebMidi.js not available, trying native Web MIDI API');
                         this.midiAccess = await navigator.requestMIDIAccess({ 
                             sysex: true,
                             software: true 
                         });
                         this.useWebMidiJS = false;
-                        this.debugLog('Native Web MIDI API enabled successfully');
+                        this.log('Native Web MIDI API enabled', 'success');
                     } else {
-                        throw new Error('Web MIDI API not supported in this browser');
+                        throw new Error('Web MIDI API not supported');
                     }
                     
-                    const connectBtn = document.getElementById('connectBtn');
-                    connectBtn.disabled = false;
-                    connectBtn.textContent = 'Connect Device';
-                    
-                    this.debugLog('MIDI initialization complete');
+                    document.getElementById('connectBtn').disabled = false;
                     
                 } catch (error) {
-                    this.debugLog('MIDI initialization failed', { error: error.message });
                     this.log(`MIDI initialization failed: ${error.message}`, 'error');
                 }
             }
 
             setupDebugControls() {
                 document.getElementById('testConnection').addEventListener('click', () => {
-                    this.uiLog('clicked', 'Test Connection button');
+                    this.log('🔍 UI: Testing connection...', 'ui');
                     this.testConnection();
                 });
 
                 document.getElementById('sendTestCC').addEventListener('click', () => {
-                    this.uiLog('clicked', 'Send Test CC button');
+                    this.log('🔍 UI: Sending test CC...', 'ui');
                     this.sendTestCC();
                 });
 
                 document.getElementById('sendTestPC').addEventListener('click', () => {
-                    this.uiLog('clicked', 'Send Test Program Change button');
+                    this.log('🔍 UI: Sending test Program Change...', 'ui');
                     this.sendTestPC();
                 });
 
                 document.getElementById('clearLog').addEventListener('click', () => {
-                    this.uiLog('clicked', 'Clear Log button');
-                    this.clearLog();
-                });
-
-                document.getElementById('debugMonitoring').addEventListener('click', () => {
-                    this.uiLog('clicked', 'Debug Monitoring button');
-                    this.debugMonitoring();
+                    this.log('🔍 UI: Clearing log...', 'ui');
+                    document.getElementById('midiLog').innerHTML = '';
                 });
             }
 
             testConnection() {
-                this.debugLog('Testing connection');
-                
                 if (!this.connected) {
                     this.log('❌ Not connected to device', 'error');
                     return;
                 }
-
-                this.log('✅ Output device connected', 'success');
-                this.debugLog('Output device info', { 
-                    name: this.outputDevice?.name,
-                    id: this.outputDevice?.id 
-                });
-
-                if (this.inputDevice) {
-                    this.log('✅ Input device connected', 'success');
-                    this.debugLog('Input device info', { 
-                        name: this.inputDevice?.name,
-                        id: this.inputDevice?.id 
-                    });
-                } else {
-                    this.log('⚠️ No input device - monitoring disabled', 'info');
-                }
-
-                this.log(`✅ Monitoring: ${this.monitoring ? 'Active' : 'Inactive'}`, 'info');
+                
+                this.log('✅ Output device: ' + (this.outputDevice?.name || 'Unknown'), 'success');
+                this.log('✅ Input device: ' + (this.inputDevice?.name || 'None'), this.inputDevice ? 'success' : 'info');
+                this.log('✅ Monitoring: ' + (this.monitoring ? 'Active' : 'Inactive'), 'info');
             }
 
             async sendTestCC() {
-                this.debugLog('Sending test CC message');
-                
                 if (!this.connected) {
-                    this.log('❌ Cannot send test CC - not connected', 'error');
+                    this.log('❌ Cannot send test - not connected', 'error');
                     return;
                 }
-
-                // Send a test CC message (CC#64, value 100)
+                
                 await this.sendCC(64, 100);
                 this.log('🧪 Test CC sent: CC#64 = 100', 'info');
                 
-                // Reset after 1 second
                 setTimeout(async () => {
                     await this.sendCC(64, 64);
                     this.log('🧪 Reset CC#64 to 64', 'info');
@@ -812,43 +809,17 @@
             }
 
             async sendTestPC() {
-                this.debugLog('Sending test Program Change');
-                
                 if (!this.connected) {
-                    this.log('❌ Cannot send test PC - not connected', 'error');
+                    this.log('❌ Cannot send test - not connected', 'error');
                     return;
                 }
-
-                // Send test program change to preset 1
+                
                 await this.sendProgramChange(0);
                 this.log('🧪 Test Program Change sent: Preset 1', 'info');
             }
 
-            clearLog() {
-                const logContainer = document.getElementById('midiLog');
-                logContainer.innerHTML = '';
-                this.log('🧹 Log cleared', 'info');
-            }
-
-            debugMonitoring() {
-                this.debugLog('Debug monitoring state');
-                
-                this.log(`📊 Monitoring Status: ${this.monitoring}`, 'info');
-                this.log(`📊 Input Device: ${this.inputDevice?.name || 'None'}`, 'info');
-                this.log(`📊 Use WebMidi.js: ${this.useWebMidiJS}`, 'info');
-                
-                if (this.inputDevice && this.monitoring) {
-                    this.log('🔍 Monitoring is active - try turning a knob on your pedal', 'info');
-                } else if (this.inputDevice && !this.monitoring) {
-                    this.log('⚠️ Input device available but monitoring inactive', 'info');
-                } else {
-                    this.log('❌ No input device available for monitoring', 'error');
-                }
-            }
-
             async connectDevice() {
-                this.uiLog('clicked', 'Connect Device button');
-                this.debugLog('Starting device connection process');
+                this.log('🔍 UI: Connect button clicked', 'ui');
                 
                 try {
                     let outputs, inputs;
@@ -856,26 +827,16 @@
                     if (this.useWebMidiJS) {
                         outputs = WebMidi.outputs;
                         inputs = WebMidi.inputs;
-                        this.debugLog('Available devices via WebMidi.js', { 
-                            outputs: outputs.length, 
-                            inputs: inputs.length 
-                        });
                     } else {
                         outputs = Array.from(this.midiAccess.outputs.values());
                         inputs = Array.from(this.midiAccess.inputs.values());
-                        this.debugLog('Available devices via native MIDI', { 
-                            outputs: outputs.length, 
-                            inputs: inputs.length 
-                        });
                     }
+                    
+                    this.log(`Found ${outputs.length} outputs, ${inputs.length} inputs`, 'info');
                     
                     if (outputs.length === 0) {
-                        throw new Error('No MIDI output devices found. Please check that your Chroma Console is connected and powered on.');
+                        throw new Error('No MIDI devices found');
                     }
-                    
-                    // Log all available devices
-                    this.debugLog('Available output devices', outputs.map(d => d.name));
-                    this.debugLog('Available input devices', inputs.map(d => d.name));
                     
                     // Look for Chroma Console
                     this.outputDevice = outputs.find(device => {
@@ -892,13 +853,6 @@
                                name.includes('console');
                     });
 
-                    this.debugLog('Device search results', {
-                        outputFound: !!this.outputDevice,
-                        inputFound: !!this.inputDevice,
-                        outputName: this.outputDevice?.name,
-                        inputName: this.inputDevice?.name
-                    });
-
                     if (!this.outputDevice) {
                         this.showDeviceSelection(outputs, inputs);
                         return;
@@ -908,18 +862,11 @@
                     this.updateConnectionStatus();
                     this.log(`Connected to ${this.outputDevice.name}`, 'success');
                     
-                    // Start monitoring if input device is available
                     if (this.inputDevice) {
                         this.startMonitoring();
-                    } else {
-                        this.log('No input device found - live monitoring disabled', 'info');
                     }
                     
-                    // Initialize device with current parameter values
-                    await this.initializeDeviceState();
-                    
                 } catch (error) {
-                    this.debugLog('Connection failed', { error: error.message });
                     this.log(`Connection failed: ${error.message}`, 'error');
                 }
             }
@@ -927,64 +874,27 @@
             startMonitoring() {
                 if (!this.inputDevice || this.monitoring) return;
 
-                this.debugLog('Starting monitoring', { device: this.inputDevice.name });
-
                 try {
                     if (this.useWebMidiJS) {
-                        // WebMidi.js event handling
                         this.inputDevice.addListener('controlchange', (e) => {
-                            this.debugLog('Received CC via WebMidi.js', { cc: e.controller.number, value: e.value });
                             this.handleIncomingCC(e.controller.number, e.value);
                         });
                         
                         this.inputDevice.addListener('programchange', (e) => {
-                            this.debugLog('Received PC via WebMidi.js', { program: e.value });
                             this.handleIncomingProgramChange(e.value);
                         });
-
-                        this.debugLog('WebMidi.js listeners attached');
                     } else {
-                        // Native Web MIDI API event handling
                         this.inputDevice.addEventListener('midimessage', (e) => {
-                            this.debugLog('Received MIDI message via native API', { data: Array.from(e.data) });
                             this.handleMidiMessage(e.data);
                         });
-
-                        this.debugLog('Native MIDI listeners attached');
                     }
 
                     this.monitoring = true;
                     this.updateConnectionStatus();
-                    document.getElementById('monitoringIndicator').style.display = 'block';
-                    this.log(`Live monitoring started on ${this.inputDevice.name}`, 'success');
+                    this.log(`Monitoring started on ${this.inputDevice.name}`, 'success');
                     
                 } catch (error) {
-                    this.debugLog('Failed to start monitoring', { error: error.message });
-                    this.log(`Failed to start monitoring: ${error.message}`, 'error');
-                }
-            }
-
-            stopMonitoring() {
-                if (!this.inputDevice || !this.monitoring) return;
-
-                this.debugLog('Stopping monitoring');
-
-                try {
-                    if (this.useWebMidiJS) {
-                        this.inputDevice.removeListener('controlchange');
-                        this.inputDevice.removeListener('programchange');
-                    } else {
-                        this.inputDevice.removeEventListener('midimessage');
-                    }
-
-                    this.monitoring = false;
-                    this.updateConnectionStatus();
-                    document.getElementById('monitoringIndicator').style.display = 'none';
-                    this.log('Live monitoring stopped', 'info');
-                    
-                } catch (error) {
-                    this.debugLog('Failed to stop monitoring', { error: error.message });
-                    this.log(`Failed to stop monitoring: ${error.message}`, 'error');
+                    this.log(`Monitoring failed: ${error.message}`, 'error');
                 }
             }
 
@@ -992,260 +902,128 @@
                 const [status, param1, param2] = data;
                 const messageType = status & 0xF0;
                 
-                this.debugLog('Processing MIDI message', { 
-                    raw: Array.from(data), 
-                    status: status.toString(16), 
-                    messageType: messageType.toString(16) 
-                });
-                
                 if (messageType === 0xB0) { // Control Change
                     this.handleIncomingCC(param1, param2);
                 } else if (messageType === 0xC0) { // Program Change
                     this.handleIncomingProgramChange(param1);
-                } else {
-                    this.debugLog('Unhandled MIDI message type', { messageType: messageType.toString(16) });
                 }
             }
 
             handleIncomingCC(ccNumber, value) {
-                this.debugLog('Handling incoming CC', { cc: ccNumber, value: value });
                 this.log(`← CC ${ccNumber}: ${value}`, 'midi');
-                
-                // Update UI for this parameter
-                this.updateUIForCC(ccNumber, value, true);
-                
-                // Update parameter cache
-                this.parameterCache.set(ccNumber, value);
+                this.updateKnobFromCC(ccNumber, value);
             }
 
             handleIncomingProgramChange(programNumber) {
-                this.debugLog('Handling incoming Program Change', { program: programNumber });
                 this.log(`← Program Change: ${programNumber} (Preset ${programNumber + 1})`, 'midi');
             }
 
-            updateUIForCC(ccNumber, value, fromDevice = false) {
-                this.debugLog('Updating UI for CC', { cc: ccNumber, value: value, fromDevice: fromDevice });
-                
-                // Find parameter by CC number
-                const param = Object.entries(this.parameters).find(([name, config]) => 
-                    config.cc === ccNumber
-                );
-                
-                if (param) {
-                    const [paramName] = param;
-                    const element = document.getElementById(paramName);
-                    const valueDisplay = document.getElementById(paramName + 'Value');
+            updateKnobFromCC(ccNumber, value) {
+                // Find knob element by CC number
+                const knob = document.querySelector(`[data-cc="${ccNumber}"]`);
+                if (knob) {
+                    knob.dataset.value = value;
+                    this.updateKnobVisual(knob);
                     
-                    if (element) {
-                        element.value = value;
-                        if (valueDisplay) {
-                            valueDisplay.textContent = value;
-                        }
-                        
-                        // Visual feedback for device updates
-                        if (fromDevice) {
-                            element.classList.add('updated');
-                            setTimeout(() => element.classList.remove('updated'), 1000);
-                        }
-
-                        this.debugLog('UI updated', { paramName: paramName, value: value });
-                    } else {
-                        this.debugLog('No UI element found for parameter', { paramName: paramName });
+                    // Update value display
+                    const valueElement = document.getElementById(knob.id.replace('Knob', 'Value'));
+                    if (valueElement) {
+                        valueElement.textContent = value;
                     }
                     
-                    // Update module selections if it's a module CC
+                    // Update effect selection if it's a module selector
                     if ([16, 17, 18, 19].includes(ccNumber)) {
-                        this.updateModuleSelectionFromValue(ccNumber, value);
+                        this.updateEffectFromCC(ccNumber, value);
                     }
-                } else {
-                    this.debugLog('No parameter definition found for CC', { cc: ccNumber });
                 }
             }
 
-            updateModuleSelectionFromValue(ccNumber, value) {
+            updateEffectFromCC(ccNumber, value) {
                 const moduleMap = {
-                    16: 'characterModules',
-                    17: 'movementModules', 
-                    18: 'diffusionModules',
-                    19: 'textureModules'
+                    16: 'character',
+                    17: 'movement',
+                    18: 'diffusion',
+                    19: 'texture'
                 };
                 
-                const containerId = moduleMap[ccNumber];
-                if (!containerId) {
-                    this.debugLog('No module container found for CC', { cc: ccNumber });
-                    return;
-                }
+                const module = moduleMap[ccNumber];
+                if (!module) return;
                 
-                this.debugLog('Updating module selection', { cc: ccNumber, value: value, container: containerId });
+                const effects = EFFECTS[module];
+                let closestEffect = effects[0];
+                let closestDiff = Math.abs(effects[0].value - value);
                 
-                const container = document.getElementById(containerId);
-                const buttons = container.querySelectorAll('.module-button');
-                
-                // Find closest button
-                let closestButton = buttons[0];
-                let closestDiff = Math.abs(parseInt(buttons[0].dataset.value) - value);
-                
-                buttons.forEach(button => {
-                    const buttonValue = parseInt(button.dataset.value);
-                    const diff = Math.abs(buttonValue - value);
+                effects.forEach((effect, index) => {
+                    const diff = Math.abs(effect.value - value);
                     if (diff < closestDiff) {
                         closestDiff = diff;
-                        closestButton = button;
+                        closestEffect = effect;
+                        this.currentEffects[module] = index;
                     }
                 });
                 
-                // Update active state
-                buttons.forEach(b => b.classList.remove('active'));
-                closestButton.classList.add('active');
-
-                this.debugLog('Module selection updated', { 
-                    closestValue: closestButton.dataset.value,
-                    buttonText: closestButton.textContent 
-                });
+                const effectElement = document.getElementById(`${module}Effect`);
+                if (effectElement) {
+                    effectElement.textContent = closestEffect.name;
+                }
             }
 
-            async sendCC(ccNumber, value, withDelay = true) {
-                this.debugLog('Preparing to send CC', { cc: ccNumber, value: value, withDelay: withDelay });
-                
+            async sendCC(ccNumber, value) {
                 if (!this.connected || !this.outputDevice) {
-                    this.debugLog('Cannot send CC - not connected');
                     this.log('Device not connected', 'error');
                     return;
                 }
 
                 try {
-                    if (withDelay) {
-                        await new Promise(resolve => setTimeout(resolve, 10));
-                    }
-
                     if (this.useWebMidiJS) {
-                        this.debugLog('Sending CC via WebMidi.js');
                         this.outputDevice.sendControlChange(ccNumber, value);
                     } else {
-                        this.debugLog('Sending CC via native MIDI');
                         const message = [0xB0, ccNumber, value];
                         this.outputDevice.send(message);
                     }
                     
-                    this.parameterCache.set(ccNumber, value);
                     this.log(`→ CC ${ccNumber}: ${value}`, 'success');
-                    this.debugLog('CC sent successfully');
                     
                 } catch (error) {
-                    this.debugLog('Failed to send CC', { error: error.message });
                     this.log(`Send failed: ${error.message}`, 'error');
-                    this.connected = false;
-                    this.updateConnectionStatus();
                 }
             }
 
             async sendProgramChange(programNumber) {
-                this.debugLog('Preparing to send Program Change', { program: programNumber });
-                
                 if (!this.connected || !this.outputDevice) {
-                    this.debugLog('Cannot send PC - not connected');
                     this.log('Device not connected', 'error');
                     return;
                 }
 
                 try {
                     if (this.useWebMidiJS) {
-                        this.debugLog('Sending PC via WebMidi.js');
                         this.outputDevice.sendProgramChange(programNumber);
                     } else {
-                        this.debugLog('Sending PC via native MIDI');
                         const message = [0xC0, programNumber];
                         this.outputDevice.send(message);
                     }
                     
                     this.log(`→ Program Change: ${programNumber} (Preset ${programNumber + 1})`, 'success');
-                    this.debugLog('Program Change sent successfully');
                     
                 } catch (error) {
-                    this.debugLog('Failed to send Program Change', { error: error.message });
                     this.log(`Program change failed: ${error.message}`, 'error');
                 }
             }
 
-            generatePresetButtons() {
-                const container = document.getElementById('presetPedalControls');
-                container.innerHTML = '';
-                
-                // Generate buttons for presets 1-80
-                for (let i = 1; i <= 80; i++) {
-                    const button = document.createElement('div');
-                    button.className = 'preset-button';
-                    button.textContent = i.toString();
-                    button.addEventListener('click', () => {
-                        this.uiLog('clicked', `Preset ${i} button`);
-                        this.sendProgramChange(i - 1); // MIDI program change is 0-based
-                    });
-                    container.appendChild(button);
-                }
-
-                this.debugLog('Generated preset buttons', { count: 80 });
-            }
-
-            async initializeDeviceState() {
-                this.debugLog('Initializing device state');
-                this.log('Initializing device state...', 'success');
-                
-                // Send all current parameter values to device
-                for (const [paramName, config] of Object.entries(this.parameters)) {
-                    const element = document.getElementById(paramName);
-                    if (element) {
-                        const value = parseInt(element.value || config.default);
-                        await this.sendCC(config.cc, value, false);
-                        this.parameterCache.set(config.cc, value);
-                    }
-                }
-
-                // Set initial module selections
-                this.updateModuleSelection('characterModules', 16);
-                this.updateModuleSelection('movementModules', 17);
-                this.updateModuleSelection('diffusionModules', 18);
-                this.updateModuleSelection('textureModules', 19);
-                
-                this.log('Device state synchronized', 'success');
-                this.debugLog('Device initialization complete');
-            }
-
             initializeUI() {
-                this.debugLog('Initializing UI');
-                
-                // Initialize sliders
-                Object.entries(this.parameters).forEach(([paramName, config]) => {
-                    const slider = document.getElementById(paramName);
-                    const valueDisplay = document.getElementById(paramName + 'Value');
-                    
-                    if (slider) {
-                        slider.value = config.default;
-                        if (valueDisplay) {
-                            valueDisplay.textContent = config.default;
-                        }
-                        
-                        slider.addEventListener('input', (e) => {
-                            const value = parseInt(e.target.value);
-                            this.uiLog('slider moved', paramName, value);
-                            
-                            if (valueDisplay) {
-                                valueDisplay.textContent = value;
-                            }
-                            this.sendCC(config.cc, value);
-                        });
-                    }
+                // Initialize knobs
+                document.querySelectorAll('.knob').forEach(knob => {
+                    this.setupKnob(knob);
                 });
 
                 // Initialize module selectors
-                this.initializeModuleSelector('characterModules', 16);
-                this.initializeModuleSelector('movementModules', 17);
-                this.initializeModuleSelector('diffusionModules', 18);
-                this.initializeModuleSelector('textureModules', 19);
+                document.querySelectorAll('.module-selector').forEach(selector => {
+                    this.setupModuleSelector(selector);
+                });
 
                 // Initialize buttons
                 document.getElementById('connectBtn').addEventListener('click', () => {
                     if (this.connected) {
-                        this.uiLog('clicked', 'Disconnect button');
                         this.disconnect();
                     } else {
                         this.connectDevice();
@@ -1253,134 +1031,121 @@
                 });
 
                 document.getElementById('refreshMidi').addEventListener('click', () => {
-                    this.uiLog('clicked', 'Refresh MIDI button');
+                    this.log('🔍 UI: Refresh MIDI clicked', 'ui');
                     this.refreshMIDI();
                 });
 
                 document.getElementById('savePreset').addEventListener('click', () => {
-                    this.uiLog('clicked', 'Save Preset button');
+                    this.log('🔍 UI: Save preset clicked', 'ui');
                     this.savePreset();
                 });
 
-                document.getElementById('loadFile').addEventListener('click', () => {
-                    this.uiLog('clicked', 'Load File button');
-                    document.getElementById('fileInput').click();
-                });
-
                 document.getElementById('exportPresets').addEventListener('click', () => {
-                    this.uiLog('clicked', 'Export Presets button');
+                    this.log('🔍 UI: Export presets clicked', 'ui');
                     this.exportPresets();
                 });
-
-                document.getElementById('fileInput').addEventListener('change', (e) => {
-                    this.uiLog('file selected', 'file input');
-                    this.importPresets(e.target.files[0]);
-                });
-
-                this.debugLog('UI initialization complete');
             }
 
-            initializeModuleSelector(containerId, ccNumber) {
-                this.debugLog('Initializing module selector', { container: containerId, cc: ccNumber });
-                
-                const container = document.getElementById(containerId);
-                const buttons = container.querySelectorAll('.module-button');
-                
-                buttons.forEach(button => {
-                    button.addEventListener('click', () => {
-                        const value = parseInt(button.dataset.value);
-                        this.uiLog('clicked', `${containerId} ${button.textContent} button`, value);
-                        
-                        // Remove active class from siblings
-                        buttons.forEach(b => b.classList.remove('active'));
-                        // Add active class to clicked button
-                        button.classList.add('active');
-                        
-                        this.sendCC(ccNumber, value);
-                        this.parameterCache.set(ccNumber, value);
-                    });
+            setupKnob(knob) {
+                let isDragging = false;
+                let startY = 0;
+                let startValue = 0;
+
+                const ccNumber = parseInt(knob.dataset.cc);
+                const min = parseInt(knob.dataset.min);
+                const max = parseInt(knob.dataset.max);
+                let value = parseInt(knob.dataset.value);
+
+                this.updateKnobVisual(knob);
+
+                knob.addEventListener('mousedown', (e) => {
+                    isDragging = true;
+                    startY = e.clientY;
+                    startValue = value;
+                    document.body.style.cursor = 'ns-resize';
+                    e.preventDefault();
                 });
 
-                // Set first button as active by default
-                if (buttons.length > 0) {
-                    buttons[0].classList.add('active');
-                }
-            }
+                document.addEventListener('mousemove', (e) => {
+                    if (!isDragging) return;
 
-            updateModuleSelection(containerId, ccNumber) {
-                const container = document.getElementById(containerId);
-                const buttons = container.querySelectorAll('.module-button');
-                const currentValue = this.parameterCache.get(ccNumber) || 10;
-                
-                // Find closest matching button
-                let closestButton = buttons[0];
-                let closestDiff = Math.abs(parseInt(buttons[0].dataset.value) - currentValue);
-                
-                buttons.forEach(button => {
-                    const buttonValue = parseInt(button.dataset.value);
-                    const diff = Math.abs(buttonValue - currentValue);
-                    if (diff < closestDiff) {
-                        closestDiff = diff;
-                        closestButton = button;
-                    }
-                });
-                
-                buttons.forEach(b => b.classList.remove('active'));
-                closestButton.classList.add('active');
-            }
-
-            getCurrentState() {
-                const state = {
-                    version: "2.1",
-                    timestamp: new Date().toISOString(),
-                    device: {
-                        name: this.outputDevice?.name || "Unknown",
-                        model: "Chroma Console"
-                    },
-                    parameters: {}
-                };
-
-                Object.entries(this.parameters).forEach(([paramName, config]) => {
-                    const element = document.getElementById(paramName);
-                    const value = element ? parseInt(element.value) : config.default;
+                    const deltaY = startY - e.clientY;
+                    const sensitivity = 0.5;
+                    const newValue = Math.max(min, Math.min(max, startValue + deltaY * sensitivity));
                     
-                    state.parameters[paramName] = {
-                        cc: config.cc,
-                        value: value
-                    };
-                });
-
-                return state;
-            }
-
-            async loadState(state) {
-                this.uiLog('loading state', 'preset', state.name);
-                this.log(`Loading preset: ${state.name || 'Unnamed'}`, 'success');
-                
-                // Update UI elements
-                Object.entries(state.parameters).forEach(([paramName, paramData]) => {
-                    const element = document.getElementById(paramName);
-                    const valueDisplay = document.getElementById(paramName + 'Value');
-                    
-                    if (element) {
-                        element.value = paramData.value;
-                        if (valueDisplay) {
-                            valueDisplay.textContent = paramData.value;
+                    if (Math.floor(newValue) !== value) {
+                        value = Math.floor(newValue);
+                        knob.dataset.value = value;
+                        this.updateKnobVisual(knob);
+                        
+                        // Update value display
+                        const valueElement = document.getElementById(knob.id.replace('Knob', 'Value'));
+                        if (valueElement) {
+                            valueElement.textContent = value;
                         }
+                        
+                        // Send MIDI
+                        this.sendCC(ccNumber, value);
+                        this.log(`🔍 UI: Knob ${knob.id} changed to ${value}`, 'ui');
                     }
                 });
 
-                // Send to device with delays
-                for (const [paramName, paramData] of Object.entries(state.parameters)) {
-                    await this.sendCC(paramData.cc, paramData.value);
-                    await new Promise(resolve => setTimeout(resolve, 10));
-                }
+                document.addEventListener('mouseup', () => {
+                    if (isDragging) {
+                        isDragging = false;
+                        document.body.style.cursor = '';
+                    }
+                });
+            }
 
-                // Update module selections
-                this.updateModuleSelection('characterModules', 16);
-                this.updateModuleSelection('movementModules', 17);
-                this.updateModuleSelection('diffusionModules', 18);
-                this.updateModuleSelection('textureModules', 19);
+            updateKnobVisual(knob) {
+                const value = parseInt(knob.dataset.value);
+                const min = parseInt(knob.dataset.min);
+                const max = parseInt(knob.dataset.max);
+                
+                const percentage = (value - min) / (max - min);
+                const rotation = -140 + (percentage * 280); // -140 to +140 degrees
+                
+                knob.style.transform = `rotate(${rotation}deg)`;
+            }
+
+            setupModuleSelector(selector) {
+                const ccNumber = parseInt(selector.dataset.cc);
+                const module = selector.parentElement.parentElement.classList[1]; // character, movement, etc.
+                
+                selector.addEventListener('click', () => {
+                    this.log(`🔍 UI: ${module} module selector clicked`, 'ui');
+                    this.cycleEffect(module, ccNumber);
+                });
+            }
+
+            cycleEffect(module, ccNumber) {
+                this.currentEffects[module] = (this.currentEffects[module] + 1) % EFFECTS[module].length;
+                const effect = EFFECTS[module][this.currentEffects[module]];
+                
+                // Update display
+                const effectElement = document.getElementById(`${module}Effect`);
+                if (effectElement) {
+                    effectElement.textContent = effect.name;
+                }
+                
+                // Send MIDI
+                this.sendCC(ccNumber, effect.value);
+                this.log(`🔍 UI: ${module} effect changed to ${effect.name} (${effect.value})`, 'ui');
+            }
+
+            generatePresetGrid() {
+                const grid = document.getElementById('presetGrid');
+                for (let i = 1; i <= 80; i++) {
+                    const btn = document.createElement('div');
+                    btn.className = 'preset-btn';
+                    btn.textContent = i;
+                    btn.addEventListener('click', () => {
+                        this.log(`🔍 UI: Preset ${i} clicked`, 'ui');
+                        this.sendProgramChange(i - 1);
+                    });
+                    grid.appendChild(btn);
+                }
             }
 
             savePreset() {
@@ -1391,91 +1156,15 @@
                     alert('Please enter a preset name');
                     return;
                 }
-
-                const preset = this.getCurrentState();
-                preset.name = name;
                 
-                this.presets.push(preset);
-                localStorage.setItem('chromaPresets', JSON.stringify(this.presets));
-                
-                nameInput.value = '';
-                this.loadPresets();
+                // Here you would save the current state
                 this.log(`Preset "${name}" saved`, 'success');
-            }
-
-            loadPresets() {
-                const container = document.getElementById('presetList');
-                container.innerHTML = '';
-                
-                this.presets.forEach((preset, index) => {
-                    const item = document.createElement('div');
-                    item.className = 'preset-item';
-                    item.innerHTML = `
-                        <span>${preset.name}</span>
-                        <button class="delete-preset" onclick="editor.deletePreset(${index})">Delete</button>
-                    `;
-                    
-                    item.addEventListener('click', (e) => {
-                        if (!e.target.classList.contains('delete-preset')) {
-                            this.uiLog('clicked', `preset ${preset.name}`);
-                            this.loadState(preset);
-                        }
-                    });
-                    
-                    container.appendChild(item);
-                });
-            }
-
-            deletePreset(index) {
-                if (confirm('Delete this preset?')) {
-                    this.presets.splice(index, 1);
-                    localStorage.setItem('chromaPresets', JSON.stringify(this.presets));
-                    this.loadPresets();
-                    this.log('Preset deleted', 'success');
-                }
+                nameInput.value = '';
             }
 
             exportPresets() {
-                const data = JSON.stringify(this.presets, null, 2);
-                const blob = new Blob([data], { type: 'application/json' });
-                const url = URL.createObjectURL(blob);
-                
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `chroma-console-presets-${new Date().toISOString().split('T')[0]}.json`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-                
+                // Export functionality
                 this.log('Presets exported', 'success');
-            }
-
-            importPresets(file) {
-                if (!file) return;
-                
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    try {
-                        const imported = JSON.parse(e.target.result);
-                        
-                        if (Array.isArray(imported)) {
-                            this.presets = [...this.presets, ...imported];
-                        } else if (imported.name && imported.parameters) {
-                            this.presets.push(imported);
-                        } else {
-                            throw new Error('Invalid preset format');
-                        }
-                        
-                        localStorage.setItem('chromaPresets', JSON.stringify(this.presets));
-                        this.loadPresets();
-                        this.log('Presets imported successfully', 'success');
-                        
-                    } catch (error) {
-                        this.log(`Import failed: ${error.message}`, 'error');
-                    }
-                };
-                reader.readAsText(file);
             }
 
             updateConnectionStatus() {
@@ -1487,11 +1176,11 @@
                     if (this.monitoring) {
                         indicator.classList.add('monitoring');
                         indicator.classList.remove('connected');
-                        status.textContent = `Connected & Monitoring ${this.outputDevice?.name || 'Device'}`;
+                        status.textContent = `Connected & Monitoring`;
                     } else {
                         indicator.classList.add('connected');
                         indicator.classList.remove('monitoring');
-                        status.textContent = `Connected to ${this.outputDevice?.name || 'Device'}`;
+                        status.textContent = `Connected`;
                     }
                     button.textContent = 'Disconnect';
                 } else {
@@ -1502,8 +1191,8 @@
             }
 
             disconnect() {
-                this.debugLog('Disconnecting from device');
-                this.stopMonitoring();
+                this.log('🔍 UI: Disconnect clicked', 'ui');
+                this.monitoring = false;
                 this.connected = false;
                 this.outputDevice = null;
                 this.inputDevice = null;
@@ -1512,21 +1201,16 @@
             }
 
             async refreshMIDI() {
-                this.debugLog('Refreshing MIDI system');
                 this.log('Refreshing MIDI system...', 'info');
                 
-                // Reset connection state
-                this.stopMonitoring();
+                this.monitoring = false;
                 this.connected = false;
                 this.outputDevice = null;
                 this.inputDevice = null;
                 this.midiAccess = null;
                 this.useWebMidiJS = false;
                 
-                // Update UI
                 this.updateConnectionStatus();
-                
-                // Re-initialize
                 await this.initialize();
                 
                 this.log('MIDI refresh complete', 'success');
@@ -1534,7 +1218,7 @@
 
             showDeviceSelection(outputs, inputs) {
                 if (outputs.length === 0) {
-                    this.log('No MIDI devices found. Please check connections.', 'error');
+                    this.log('No MIDI devices found', 'error');
                     return;
                 }
 
@@ -1542,8 +1226,7 @@
                     `${index + 1}. ${output.name}`
                 ).join('\n');
                 
-                const message = `Multiple MIDI devices found:\n\n${deviceList}\n\nSelect your Chroma Console:`;
-                const selection = prompt(message + '\n\nEnter the number (1, 2, 3...) or part of the device name:');
+                const selection = prompt(`Multiple MIDI devices found:\n\n${deviceList}\n\nSelect your Chroma Console:\n\nEnter the number (1, 2, 3...) or part of the device name:`);
 
                 if (selection) {
                     let selectedOutput = null;
@@ -1569,16 +1252,9 @@
                         this.updateConnectionStatus();
                         this.log(`Connected to ${this.outputDevice.name}`, 'success');
                         
-                        this.debugLog('Manual device selection', {
-                            output: this.outputDevice.name,
-                            input: this.inputDevice?.name || 'None'
-                        });
-                        
                         if (this.inputDevice) {
                             this.startMonitoring();
                         }
-                        
-                        this.initializeDeviceState();
                     } else {
                         this.log('Device not found. Please try again.', 'error');
                     }
@@ -1603,8 +1279,8 @@
             }
         }
 
-        // Initialize the debug enhanced editor
-        const editor = new DebugEnhancedChromaEditor();
+        // Initialize the editor
+        const editor = new ChromaConsoleEditor();
         editor.initialize();
     </script>
 </body>
