@@ -1,0 +1,1398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chroma Console MIDI Editor</title>
+    <script src="https://cdn.jsdelivr.net/npm/webmidi@latest/dist/iife/webmidi.iife.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+
+        .connection-status {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            flex-wrap: wrap;
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #ff4757;
+            animation: pulse 2s infinite;
+        }
+
+        .status-indicator.connected {
+            background: #2ed573;
+            animation: none;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .control-panel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .control-section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .control-section h3 {
+            margin-bottom: 20px;
+            color: #4ecdc4;
+            border-bottom: 2px solid #4ecdc4;
+            padding-bottom: 10px;
+        }
+
+        .parameter-control {
+            margin-bottom: 20px;
+        }
+
+        .parameter-control label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #ddd;
+        }
+
+        .slider-container {
+            position: relative;
+            margin-bottom: 10px;
+        }
+
+        .slider {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #333;
+            outline: none;
+            appearance: none;
+            transition: all 0.3s ease;
+        }
+
+        .slider::-webkit-slider-thumb {
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(78, 205, 196, 0.5);
+            transition: all 0.3s ease;
+        }
+
+        .slider::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 15px rgba(78, 205, 196, 0.8);
+        }
+
+        .slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 0 10px rgba(78, 205, 196, 0.5);
+        }
+
+        .value-display {
+            text-align: center;
+            font-size: 0.9em;
+            color: #4ecdc4;
+            margin-top: 5px;
+        }
+
+        .module-selector {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .module-button {
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            font-size: 0.9em;
+        }
+
+        .module-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .module-button.active {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            border-color: #4ecdc4;
+            box-shadow: 0 0 15px rgba(78, 205, 196, 0.3);
+        }
+
+        .preset-section {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            margin-bottom: 20px;
+        }
+
+        .preset-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            color: white;
+            font-size: 14px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .preset-name {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            font-size: 14px;
+            min-width: 200px;
+        }
+
+        .preset-name::placeholder {
+            color: #aaa;
+        }
+
+        .preset-list {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .preset-item {
+            padding: 12px 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .preset-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .preset-item:last-child {
+            border-bottom: none;
+        }
+
+        .delete-preset {
+            background: #ff4757;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .log {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            height: 120px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .log-entry {
+            margin-bottom: 5px;
+            opacity: 0.8;
+        }
+
+        .log-entry.error {
+            color: #ff4757;
+        }
+
+        .log-entry.success {
+            color: #2ed573;
+        }
+
+        .log-entry.info {
+            color: #ffa502;
+        }
+
+        .resync-warning {
+            background: rgba(255, 193, 7, 0.2);
+            border: 1px solid #ffc107;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .control-panel {
+                grid-template-columns: 1fr;
+            }
+            
+            .preset-controls {
+                flex-direction: column;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .connection-status {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .btn {
+                width: 100%;
+                margin: 5px 0;
+            }
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            color: #aaa;
+            font-size: 14px;
+        }
+
+        .footer a {
+            color: #4ecdc4;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Chroma Console MIDI Editor</h1>
+            <div class="connection-status">
+                <div class="status-indicator" id="statusIndicator"></div>
+                <span id="connectionStatus">Disconnected</span>
+                <button class="btn" id="connectBtn">Connect Device</button>
+                <button class="btn" id="refreshMidi">Refresh MIDI</button>
+            </div>
+        </div>
+
+        <div class="resync-warning" id="resyncWarning">
+            <strong>⚠️ State Sync Warning:</strong> Device state may be out of sync. 
+            <button class="btn" id="resyncBtn">Resync All Parameters</button>
+        </div>
+
+        <div class="resync-warning" id="browserWarning" style="background: rgba(255, 87, 34, 0.2); border-color: #ff5722; display: none;">
+            <strong>🚫 Browser Compatibility Issue:</strong> <span id="browserMessage"></span>
+            <div style="margin-top: 10px;">
+                <button class="btn" id="switchBrowserBtn" style="background: #ff5722; margin-right: 10px;">Copy URL for Chrome</button>
+                <button class="btn" id="openChromeBtn" style="background: #4285f4;">Open in Chrome</button>
+            </div>
+        </div>
+
+        <div class="resync-warning" id="permissionsWarning" style="background: rgba(244, 67, 54, 0.2); border-color: #f44336; display: none;">
+            <strong>🚫 Chrome Permissions Policy Error:</strong> <span id="permissionsMessage">MIDI access has been blocked by Chrome's security policy.</span>
+            <div style="margin-top: 10px;">
+                <button class="btn" id="fixPermissionsBtn" style="background: #f44336; margin-right: 10px;">Fix Chrome Settings</button>
+                <button class="btn" id="tryHTTPSBtn" style="background: #4caf50;">Try HTTPS</button>
+            </div>
+        </div>
+
+        <div class="control-panel">
+            <div class="control-section">
+                <h3>Primary Controls</h3>
+                
+                <div class="parameter-control">
+                    <label for="tilt">Tilt (CC #64)</label>
+                    <div class="slider-container">
+                        <input type="range" id="tilt" class="slider" min="0" max="127" value="64">
+                    </div>
+                    <div class="value-display" id="tiltValue">64</div>
+                </div>
+
+                <div class="parameter-control">
+                    <label for="rate">Rate (CC #66)</label>
+                    <div class="slider-container">
+                        <input type="range" id="rate" class="slider" min="0" max="127" value="0">
+                    </div>
+                    <div class="value-display" id="rateValue">0</div>
+                </div>
+
+                <div class="parameter-control">
+                    <label for="time">Time (CC #68)</label>
+                    <div class="slider-container">
+                        <input type="range" id="time" class="slider" min="0" max="127" value="64">
+                    </div>
+                    <div class="value-display" id="timeValue">64</div>
+                </div>
+
+                <div class="parameter-control">
+                    <label for="mix">Mix (CC #70)</label>
+                    <div class="slider-container">
+                        <input type="range" id="mix" class="slider" min="0" max="127" value="127">
+                    </div>
+                    <div class="value-display" id="mixValue">127</div>
+                </div>
+            </div>
+
+            <div class="control-section">
+                <h3>Module Selection</h3>
+                
+                <div class="parameter-control">
+                    <label>Character Module (CC #16)</label>
+                    <div class="module-selector" id="characterModules">
+                        <div class="module-button" data-value="0">Drive</div>
+                        <div class="module-button" data-value="43">Fuzz</div>
+                        <div class="module-button" data-value="85">Boost</div>
+                        <div class="module-button" data-value="127">Preamp</div>
+                    </div>
+                </div>
+
+                <div class="parameter-control">
+                    <label>Movement Module (CC #17)</label>
+                    <div class="module-selector" id="movementModules">
+                        <div class="module-button" data-value="0">Tremolo</div>
+                        <div class="module-button" data-value="22">Vibrato</div>
+                        <div class="module-button" data-value="43">Chorus</div>
+                        <div class="module-button" data-value="64">Flanger</div>
+                        <div class="module-button" data-value="85">Phaser</div>
+                        <div class="module-button" data-value="127">Filter</div>
+                    </div>
+                </div>
+
+                <div class="parameter-control">
+                    <label>Space Module (CC #18)</label>
+                    <div class="module-selector" id="spaceModules">
+                        <div class="module-button" data-value="0">Hall</div>
+                        <div class="module-button" data-value="32">Room</div>
+                        <div class="module-button" data-value="64">Plate</div>
+                        <div class="module-button" data-value="96">Spring</div>
+                        <div class="module-button" data-value="127">Delay</div>
+                    </div>
+                </div>
+
+                <div class="parameter-control">
+                    <label>Time Module (CC #19)</label>
+                    <div class="module-selector" id="timeModules">
+                        <div class="module-button" data-value="0">Eighth</div>
+                        <div class="module-button" data-value="43">Quarter</div>
+                        <div class="module-button" data-value="85">Dotted</div>
+                        <div class="module-button" data-value="127">Reverse</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="preset-section">
+            <h3>Preset Management</h3>
+            <div class="preset-controls">
+                <input type="text" class="preset-name" id="presetName" placeholder="Enter preset name...">
+                <button class="btn" id="savePreset">Save Preset</button>
+                <button class="btn" id="loadFile">Load File</button>
+                <button class="btn" id="exportPresets">Export All</button>
+                <input type="file" id="fileInput" accept=".json" style="display: none;">
+            </div>
+            <div class="preset-list" id="presetList"></div>
+        </div>
+
+        <div class="preset-section">
+            <h3>MIDI Log</h3>
+            <div class="log" id="midiLog"></div>
+        </div>
+
+        <div class="footer">
+            <p>Chroma Console MIDI Editor | Built for <a href="https://www.hologramelectronics.com/chroma-console" target="_blank">Hologram Electronics Chroma Console</a></p>
+            <p>Hosted on GitHub Pages | <a href="https://github.com" target="_blank">Source Code</a></p>
+        </div>
+    </div>
+
+    <script>
+        class ChromaConsoleEditor {
+            constructor() {
+                this.device = null;
+                this.connected = false;
+                this.useWebMidiJS = false;
+                this.midiAccess = null;
+                this.parameterCache = new Map();
+                this.pendingUpdates = new Map();
+                this.updateScheduled = false;
+                this.lastSentTime = new Map();
+                this.presets = JSON.parse(localStorage.getItem('chromaPresets') || '[]');
+                
+                // Parameter definitions
+                this.parameters = {
+                    tilt: { cc: 64, default: 64 },
+                    rate: { cc: 66, default: 0 },
+                    time: { cc: 68, default: 64 },
+                    mix: { cc: 70, default: 127 },
+                    character: { cc: 16, default: 0 },
+                    movement: { cc: 17, default: 0 },
+                    space: { cc: 18, default: 0 },
+                    timeModule: { cc: 19, default: 0 }
+                };
+
+                this.initializeUI();
+                this.loadPresets();
+                this.log('Chroma Console Editor initialized', 'success');
+            }
+
+            async initialize() {
+                // Detect browser type
+                const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+                const isChrome = /chrome/i.test(navigator.userAgent);
+                const isFirefox = /firefox/i.test(navigator.userAgent);
+                
+                this.log(`Detected browser: ${isSafari ? 'Safari' : isChrome ? 'Chrome' : isFirefox ? 'Firefox' : 'Unknown'}`, 'info');
+                
+                try {
+                    // Check if WebMidi.js is available
+                    if (typeof WebMidi !== 'undefined') {
+                        this.log('Attempting to enable WebMidi.js...', 'info');
+                        await WebMidi.enable();
+                        this.useWebMidiJS = true;
+                        this.log('WebMidi.js enabled successfully', 'success');
+                    } else if (navigator.requestMIDIAccess) {
+                        // Fallback to native Web MIDI API
+                        this.log('WebMidi.js not available, trying native Web MIDI API...', 'info');
+                        this.log('Requesting MIDI access (this may show a permission prompt)...', 'info');
+                        
+                        this.midiAccess = await navigator.requestMIDIAccess({ 
+                            sysex: false,
+                            software: true 
+                        });
+                        
+                        this.useWebMidiJS = false;
+                        this.log('Native Web MIDI API enabled successfully', 'success');
+                        
+                        // Log available devices
+                        const inputs = Array.from(this.midiAccess.inputs.values());
+                        const outputs = Array.from(this.midiAccess.outputs.values());
+                        this.log(`Found ${inputs.length} MIDI inputs, ${outputs.length} MIDI outputs`, 'info');
+                        
+                        if (outputs.length > 0) {
+                            outputs.forEach(output => {
+                                this.log(`Available output: ${output.name}`, 'info');
+                            });
+                        }
+                        
+                    } else {
+                        // No MIDI support available
+                        if (isSafari) {
+                            throw new Error('Safari requires Jazz-Plugin for MIDI support. Please switch to Chrome for the best experience.');
+                        } else {
+                            throw new Error('Web MIDI API not supported in this browser');
+                        }
+                    }
+                    
+                    const connectBtn = document.getElementById('connectBtn');
+                    connectBtn.disabled = false;
+                    connectBtn.textContent = 'Connect Device';
+                    
+                } catch (error) {
+                    this.log(`MIDI initialization failed: ${error.message}`, 'error');
+                    
+                    // More specific error handling
+                    if (error.message.includes('permissions policy')) {
+                        this.log('Chrome permissions policy is blocking MIDI access', 'error');
+                        this.showPermissionsPolicyError();
+                    } else if (error.name === 'NotAllowedError') {
+                        this.log('MIDI permission denied by user. Please reload and grant permission.', 'error');
+                        this.showPermissionError();
+                    } else if (error.name === 'AbortError') {
+                        this.log('MIDI request was cancelled. Please try again.', 'error');
+                    } else if (error.message.includes('secure context')) {
+                        this.log('MIDI requires HTTPS. Please use a secure connection.', 'error');
+                        this.showHTTPSError();
+                    } else if (isSafari) {
+                        this.showSafariBrowserRecommendation();
+                    } else {
+                        this.showGenericMIDIError();
+                    }
+                }
+            }
+
+            async connectDevice() {
+                try {
+                    this.log('Attempting to connect to device...', 'info');
+                    
+                    let outputs;
+                    
+                    if (this.useWebMidiJS) {
+                        // Using WebMidi.js
+                        if (typeof WebMidi === 'undefined' || !WebMidi.enabled) {
+                            throw new Error('WebMidi.js is not properly initialized');
+                        }
+                        outputs = WebMidi.outputs;
+                        this.log(`WebMidi.js found ${outputs.length} output devices`, 'info');
+                    } else {
+                        // Using native Web MIDI API
+                        if (!this.midiAccess) {
+                            this.log('MIDI not initialized. Attempting to initialize now...', 'info');
+                            await this.initialize();
+                            if (!this.midiAccess) {
+                                throw new Error('Failed to initialize MIDI access');
+                            }
+                        }
+                        
+                        outputs = Array.from(this.midiAccess.outputs.values());
+                        this.log(`Native MIDI API found ${outputs.length} output devices`, 'info');
+                    }
+                    
+                    if (outputs.length === 0) {
+                        throw new Error('No MIDI output devices found. Please check that your Chroma Console is connected and powered on.');
+                    }
+                    
+                    // Log all available devices
+                    outputs.forEach((output, index) => {
+                        this.log(`Device ${index + 1}: ${output.name}`, 'info');
+                    });
+                    
+                    // Look for Chroma Console in available outputs
+                    this.device = outputs.find(output => {
+                        const name = output.name.toLowerCase();
+                        return name.includes('chroma') || 
+                               name.includes('hologram') ||
+                               name.includes('console');
+                    });
+
+                    if (!this.device) {
+                        // Show available devices for user selection
+                        this.showDeviceSelection(outputs);
+                        return;
+                    }
+
+                    this.connected = true;
+                    this.updateConnectionStatus();
+                    this.log(`Connected to ${this.device.name}`, 'success');
+                    
+                    // Initialize device with current parameter values
+                    await this.initializeDeviceState();
+                    
+                } catch (error) {
+                    this.log(`Connection failed: ${error.message}`, 'error');
+                    
+                    // Show specific troubleshooting
+                    if (error.message.includes('No MIDI output devices')) {
+                        this.showDeviceTroubleshooting();
+                    }
+                }
+            }
+
+            async initializeDeviceState() {
+                this.log('Initializing device state...', 'success');
+                
+                // Send all current parameter values to device
+                for (const [paramName, config] of Object.entries(this.parameters)) {
+                    const element = document.getElementById(paramName);
+                    if (element) {
+                        const value = parseInt(element.value || config.default);
+                        await this.sendCC(config.cc, value, false);
+                        this.parameterCache.set(config.cc, value);
+                    }
+                }
+
+                // Set initial module selections
+                this.updateModuleSelection('characterModules', 16);
+                this.updateModuleSelection('movementModules', 17);
+                this.updateModuleSelection('spaceModules', 18);
+                this.updateModuleSelection('timeModules', 19);
+                
+                this.log('Device state synchronized', 'success');
+            }
+
+            async sendCC(ccNumber, value, withDelay = true) {
+                if (!this.connected || !this.device) {
+                    this.log('Device not connected', 'error');
+                    return;
+                }
+
+                try {
+                    // Add small delay between messages to prevent buffer overflow
+                    if (withDelay) {
+                        const lastSent = this.lastSentTime.get(ccNumber) || 0;
+                        const timeSince = Date.now() - lastSent;
+                        if (timeSince < 10) {
+                            await new Promise(resolve => setTimeout(resolve, 10 - timeSince));
+                        }
+                    }
+
+                    if (this.useWebMidiJS) {
+                        // Using WebMidi.js
+                        this.device.sendControlChange(ccNumber, value);
+                    } else {
+                        // Using native Web MIDI API
+                        // Control Change message: [0xB0 + channel, controller, value]
+                        const message = [0xB0, ccNumber, value];
+                        this.device.send(message);
+                    }
+                    
+                    this.parameterCache.set(ccNumber, value);
+                    this.lastSentTime.set(ccNumber, Date.now());
+                    
+                    this.log(`CC ${ccNumber}: ${value}`, 'success');
+                    
+                } catch (error) {
+                    this.log(`Send failed: ${error.message}`, 'error');
+                    this.connected = false;
+                    this.updateConnectionStatus();
+                }
+            }
+
+            scheduleUIUpdate(ccNumber, value) {
+                this.pendingUpdates.set(ccNumber, value);
+                
+                if (!this.updateScheduled) {
+                    this.updateScheduled = true;
+                    requestAnimationFrame(() => {
+                        for (const [cc, val] of this.pendingUpdates) {
+                            this.updateUIForCC(cc, val);
+                        }
+                        this.pendingUpdates.clear();
+                        this.updateScheduled = false;
+                    });
+                }
+            }
+
+            updateUIForCC(ccNumber, value) {
+                // Find parameter by CC number
+                const param = Object.entries(this.parameters).find(([name, config]) => 
+                    config.cc === ccNumber
+                );
+                
+                if (param) {
+                    const [paramName] = param;
+                    const element = document.getElementById(paramName);
+                    const valueDisplay = document.getElementById(paramName + 'Value');
+                    
+                    if (element && element.value != value) {
+                        element.value = value;
+                        if (valueDisplay) {
+                            valueDisplay.textContent = value;
+                        }
+                    }
+                }
+            }
+
+            initializeUI() {
+                // Initialize sliders
+                Object.entries(this.parameters).forEach(([paramName, config]) => {
+                    const slider = document.getElementById(paramName);
+                    const valueDisplay = document.getElementById(paramName + 'Value');
+                    
+                    if (slider) {
+                        slider.value = config.default;
+                        if (valueDisplay) {
+                            valueDisplay.textContent = config.default;
+                        }
+                        
+                        slider.addEventListener('input', (e) => {
+                            const value = parseInt(e.target.value);
+                            if (valueDisplay) {
+                                valueDisplay.textContent = value;
+                            }
+                            this.sendCC(config.cc, value);
+                        });
+                    }
+                });
+
+                // Initialize module selectors
+                this.initializeModuleSelector('characterModules', 16);
+                this.initializeModuleSelector('movementModules', 17);
+                this.initializeModuleSelector('spaceModules', 18);
+                this.initializeModuleSelector('timeModules', 19);
+
+                // Initialize buttons
+                document.getElementById('connectBtn').addEventListener('click', () => {
+                    if (this.connected) {
+                        this.disconnect();
+                    } else {
+                        this.connectDevice();
+                    }
+                });
+
+                document.getElementById('refreshMidi').addEventListener('click', () => {
+                    this.refreshMIDI();
+                });
+
+                document.getElementById('resyncBtn').addEventListener('click', () => {
+                    this.initializeDeviceState();
+                    document.getElementById('resyncWarning').style.display = 'none';
+                });
+
+                document.getElementById('savePreset').addEventListener('click', () => {
+                    this.savePreset();
+                });
+
+                document.getElementById('loadFile').addEventListener('click', () => {
+                    document.getElementById('fileInput').click();
+                });
+
+                document.getElementById('exportPresets').addEventListener('click', () => {
+                    this.exportPresets();
+                });
+
+                document.getElementById('fileInput').addEventListener('change', (e) => {
+                    this.importPresets(e.target.files[0]);
+                });
+
+                // Only add event listeners if the buttons exist
+                const switchBtn = document.getElementById('switchBrowserBtn');
+                if (switchBtn) {
+                    switchBtn.addEventListener('click', () => {
+                        this.copyURLForChrome();
+                    });
+                }
+
+                const openChromeBtn = document.getElementById('openChromeBtn');
+                if (openChromeBtn) {
+                    openChromeBtn.addEventListener('click', () => {
+                        this.openInChrome();
+                    });
+                }
+
+                // Permission warning buttons
+                const fixPermissionsBtn = document.getElementById('fixPermissionsBtn');
+                if (fixPermissionsBtn) {
+                    fixPermissionsBtn.addEventListener('click', () => {
+                        this.openChromeSettings();
+                    });
+                }
+
+                const tryHTTPSBtn = document.getElementById('tryHTTPSBtn');
+                if (tryHTTPSBtn) {
+                    tryHTTPSBtn.addEventListener('click', () => {
+                        this.tryHTTPS();
+                    });
+                }
+
+                // Check browser compatibility on load
+                this.checkBrowserCompatibility();
+            }
+
+            initializeModuleSelector(containerId, ccNumber) {
+                const container = document.getElementById(containerId);
+                const buttons = container.querySelectorAll('.module-button');
+                
+                buttons.forEach(button => {
+                    button.addEventListener('click', () => {
+                        // Remove active class from siblings
+                        buttons.forEach(b => b.classList.remove('active'));
+                        // Add active class to clicked button
+                        button.classList.add('active');
+                        
+                        const value = parseInt(button.dataset.value);
+                        this.sendCC(ccNumber, value);
+                        this.parameterCache.set(ccNumber, value);
+                    });
+                });
+
+                // Set first button as active by default
+                if (buttons.length > 0) {
+                    buttons[0].classList.add('active');
+                }
+            }
+
+            updateModuleSelection(containerId, ccNumber) {
+                const container = document.getElementById(containerId);
+                const buttons = container.querySelectorAll('.module-button');
+                const currentValue = this.parameterCache.get(ccNumber) || 0;
+                
+                // Find closest matching button
+                let closestButton = buttons[0];
+                let closestDiff = Math.abs(parseInt(buttons[0].dataset.value) - currentValue);
+                
+                buttons.forEach(button => {
+                    const buttonValue = parseInt(button.dataset.value);
+                    const diff = Math.abs(buttonValue - currentValue);
+                    if (diff < closestDiff) {
+                        closestDiff = diff;
+                        closestButton = button;
+                    }
+                });
+                
+                buttons.forEach(b => b.classList.remove('active'));
+                closestButton.classList.add('active');
+            }
+
+            getCurrentState() {
+                const state = {
+                    version: "1.0",
+                    timestamp: new Date().toISOString(),
+                    device: {
+                        name: this.device?.name || "Unknown",
+                        model: "Chroma Console"
+                    },
+                    parameters: {}
+                };
+
+                Object.entries(this.parameters).forEach(([paramName, config]) => {
+                    const element = document.getElementById(paramName);
+                    const value = element ? parseInt(element.value) : config.default;
+                    
+                    state.parameters[paramName] = {
+                        cc: config.cc,
+                        value: value
+                    };
+                });
+
+                return state;
+            }
+
+            async loadState(state) {
+                this.log(`Loading preset: ${state.name || 'Unnamed'}`, 'success');
+                
+                // Update UI elements
+                Object.entries(state.parameters).forEach(([paramName, paramData]) => {
+                    const element = document.getElementById(paramName);
+                    const valueDisplay = document.getElementById(paramName + 'Value');
+                    
+                    if (element) {
+                        element.value = paramData.value;
+                        if (valueDisplay) {
+                            valueDisplay.textContent = paramData.value;
+                        }
+                    }
+                });
+
+                // Send to device with delays
+                for (const [paramName, paramData] of Object.entries(state.parameters)) {
+                    await this.sendCC(paramData.cc, paramData.value);
+                    await new Promise(resolve => setTimeout(resolve, 10));
+                }
+
+                // Update module selections
+                this.updateModuleSelection('characterModules', 16);
+                this.updateModuleSelection('movementModules', 17);
+                this.updateModuleSelection('spaceModules', 18);
+                this.updateModuleSelection('timeModules', 19);
+            }
+
+            savePreset() {
+                const nameInput = document.getElementById('presetName');
+                const name = nameInput.value.trim();
+                
+                if (!name) {
+                    alert('Please enter a preset name');
+                    return;
+                }
+
+                const preset = this.getCurrentState();
+                preset.name = name;
+                
+                this.presets.push(preset);
+                localStorage.setItem('chromaPresets', JSON.stringify(this.presets));
+                
+                nameInput.value = '';
+                this.loadPresets();
+                this.log(`Preset "${name}" saved`, 'success');
+            }
+
+            loadPresets() {
+                const container = document.getElementById('presetList');
+                container.innerHTML = '';
+                
+                this.presets.forEach((preset, index) => {
+                    const item = document.createElement('div');
+                    item.className = 'preset-item';
+                    item.innerHTML = `
+                        <span>${preset.name}</span>
+                        <button class="delete-preset" onclick="editor.deletePreset(${index})">Delete</button>
+                    `;
+                    
+                    item.addEventListener('click', (e) => {
+                        if (!e.target.classList.contains('delete-preset')) {
+                            this.loadState(preset);
+                        }
+                    });
+                    
+                    container.appendChild(item);
+                });
+            }
+
+            deletePreset(index) {
+                if (confirm('Delete this preset?')) {
+                    this.presets.splice(index, 1);
+                    localStorage.setItem('chromaPresets', JSON.stringify(this.presets));
+                    this.loadPresets();
+                    this.log('Preset deleted', 'success');
+                }
+            }
+
+            exportPresets() {
+                const data = JSON.stringify(this.presets, null, 2);
+                const blob = new Blob([data], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `chroma-console-presets-${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                this.log('Presets exported', 'success');
+            }
+
+            importPresets(file) {
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const imported = JSON.parse(e.target.result);
+                        
+                        if (Array.isArray(imported)) {
+                            this.presets = [...this.presets, ...imported];
+                        } else if (imported.name && imported.parameters) {
+                            this.presets.push(imported);
+                        } else {
+                            throw new Error('Invalid preset format');
+                        }
+                        
+                        localStorage.setItem('chromaPresets', JSON.stringify(this.presets));
+                        this.loadPresets();
+                        this.log('Presets imported successfully', 'success');
+                        
+                    } catch (error) {
+                        this.log(`Import failed: ${error.message}`, 'error');
+                    }
+                };
+                reader.readAsText(file);
+            }
+
+            updateConnectionStatus() {
+                const indicator = document.getElementById('statusIndicator');
+                const status = document.getElementById('connectionStatus');
+                const button = document.getElementById('connectBtn');
+                
+                if (this.connected) {
+                    indicator.classList.add('connected');
+                    status.textContent = `Connected to ${this.device?.name || 'Device'}`;
+                    button.textContent = 'Disconnect';
+                } else {
+                    indicator.classList.remove('connected');
+                    status.textContent = 'Disconnected';
+                    button.textContent = 'Connect Device';
+                }
+            }
+
+            disconnect() {
+                this.connected = false;
+                this.device = null;
+                this.updateConnectionStatus();
+                this.log('Disconnected from device', 'success');
+            }
+
+            async refreshMIDI() {
+                this.log('Refreshing MIDI system...', 'info');
+                
+                // Reset connection state
+                this.connected = false;
+                this.device = null;
+                this.midiAccess = null;
+                this.useWebMidiJS = false;
+                
+                // Update UI
+                this.updateConnectionStatus();
+                
+                // Re-initialize
+                await this.initialize();
+                
+                this.log('MIDI refresh complete', 'success');
+            }
+
+            showPermissionsPolicyError() {
+                // Show the permissions warning banner
+                const permissionsWarning = document.getElementById('permissionsWarning');
+                const permissionsMessage = document.getElementById('permissionsMessage');
+                
+                const currentURL = window.location.href;
+                const isHTTPS = currentURL.startsWith('https://');
+                
+                if (!isHTTPS) {
+                    permissionsMessage.textContent = 'MIDI requires HTTPS. This page is running over HTTP.';
+                } else {
+                    permissionsMessage.textContent = 'Chrome has blocked MIDI access. Check your Chrome settings.';
+                }
+                
+                permissionsWarning.style.display = 'block';
+                
+                // Also show detailed popup
+                let message = `🚫 Chrome Permissions Policy Error
+
+Chrome has blocked Web MIDI API access for this page.
+
+SOLUTIONS:
+
+`;
+                
+                if (!isHTTPS) {
+                    message += `1. ⚠️ SECURITY ISSUE: This page is running over HTTP
+   • MIDI requires HTTPS for security
+   • Try accessing over HTTPS instead
+
+`;
+                }
+                
+                message += `2. 🔧 Chrome Settings Fix:
+   • Go to chrome://settings/content/midi
+   • Make sure "Sites can ask to access MIDI devices" is enabled
+   • Add this site to "Allowed" list if needed
+
+3. 🌐 Try a different approach:
+   • Open Chrome in Incognito mode
+   • Disable extensions that might block MIDI
+   • Try a different Chrome profile
+
+The red warning banner above has buttons to help fix this issue.`;
+
+                alert(message);
+            }
+
+            openChromeSettings() {
+                // Try to open Chrome MIDI settings
+                try {
+                    window.open('chrome://settings/content/midi', '_blank');
+                } catch (error) {
+                    alert(`Open Chrome settings manually:
+
+1. Copy this URL: chrome://settings/content/midi
+2. Paste it in a new Chrome tab
+3. Make sure "Sites can ask to access MIDI devices" is enabled
+4. Add this site to allowed list if needed
+5. Reload this page`);
+                }
+            }
+
+            tryHTTPS() {
+                const currentURL = window.location.href;
+                const httpsURL = currentURL.replace('http://', 'https://');
+                
+                if (currentURL === httpsURL) {
+                    alert('This page is already using HTTPS. Try the "Fix Chrome Settings" button instead.');
+                    return;
+                }
+                
+                // Copy HTTPS URL
+                this.copyToClipboard(httpsURL, 'HTTPS URL copied! Paste it in your address bar and try again.');
+            }
+
+            showHTTPSError() {
+                const currentURL = window.location.href;
+                const httpsURL = currentURL.replace('http://', 'https://');
+                
+                const message = `🔒 HTTPS Required for MIDI
+
+Web MIDI API requires a secure (HTTPS) connection for security reasons.
+
+Current URL: ${currentURL}
+Try this instead: ${httpsURL}
+
+Click OK to copy the HTTPS URL.`;
+
+                if (confirm(message)) {
+                    this.copyToClipboard(httpsURL, 'HTTPS URL copied! Paste it in your address bar.');
+                }
+            }
+
+            copyToClipboard(text, successMessage) {
+                try {
+                    navigator.clipboard.writeText(text).then(() => {
+                        alert(successMessage);
+                    }).catch(() => {
+                        prompt('Copy this URL:', text);
+                    });
+                } catch (error) {
+                    prompt('Copy this URL:', text);
+                }
+            }
+
+            showPermissionError() {
+                alert(`🚫 MIDI Permission Required
+
+Chrome needs permission to access MIDI devices.
+
+To fix this:
+1. Look for a permission prompt in your address bar
+2. Click "Allow" to grant MIDI access
+3. If no prompt appears, click the lock icon next to the URL
+4. Set "MIDI devices" to "Allow"
+5. Reload this page
+
+Your Chroma Console must be connected and powered on.`);
+            }
+
+            showDeviceTroubleshooting() {
+                alert(`🔍 No MIDI Devices Found
+
+Troubleshooting steps:
+1. Check that your Chroma Console is powered on
+2. Verify USB connection is secure
+3. Try a different USB cable
+4. Check that no other software is using the device
+5. Reload this page after connecting
+
+If using DIN MIDI:
+- Ensure your MIDI interface is connected
+- Check MIDI channel settings`);
+            }
+
+            openInChrome() {
+                const currentURL = window.location.href;
+                
+                // Try to open in Chrome using chrome:// protocol
+                const chromeURL = `googlechrome://${currentURL}`;
+                
+                try {
+                    // Create a temporary link to try opening in Chrome
+                    const link = document.createElement('a');
+                    link.href = chromeURL;
+                    link.click();
+                    
+                    // Also show manual instructions as fallback
+                    setTimeout(() => {
+                        alert(`If Chrome didn't open automatically:\n\n1. Open Chrome manually\n2. Copy this URL: ${currentURL}\n3. Paste it in Chrome's address bar`);
+                    }, 1000);
+                    
+                } catch (error) {
+                    // Fallback to manual copy
+                    this.copyURLForChrome();
+                }
+            }
+
+            copyURLForChrome() {
+                const currentURL = window.location.href;
+                
+                // Try multiple methods to get the URL to the user
+                try {
+                    // Method 1: Try clipboard API (might not work in Safari)
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                        navigator.clipboard.writeText(currentURL).then(() => {
+                            alert('✅ URL copied to clipboard!\n\nNow:\n1. Open Chrome\n2. Paste (Cmd+V) in address bar\n3. Connect your Chroma Console');
+                        }).catch(() => {
+                            this.showURLManually(currentURL);
+                        });
+                    } else {
+                        this.showURLManually(currentURL);
+                    }
+                } catch (error) {
+                    this.showURLManually(currentURL);
+                }
+            }
+
+            showURLManually(url) {
+                // Method 2: Show URL in a prompt for manual copying
+                const message = `Copy this URL and open it in Chrome:\n\n${url}`;
+                
+                // Create a text area element to select the text
+                const textArea = document.createElement('textarea');
+                textArea.value = url;
+                document.body.appendChild(textArea);
+                textArea.select();
+                textArea.setSelectionRange(0, 99999); // For mobile
+                
+                try {
+                    // Try the old execCommand method
+                    const successful = document.execCommand('copy');
+                    if (successful) {
+                        alert('✅ URL copied to clipboard!\n\nNow:\n1. Open Chrome\n2. Paste (Cmd+V) in address bar\n3. Connect your Chroma Console');
+                    } else {
+                        prompt('Copy this URL to open in Chrome:', url);
+                    }
+                } catch (err) {
+                    prompt('Copy this URL to open in Chrome:', url);
+                }
+                
+                document.body.removeChild(textArea);
+            }
+
+            showSafariBrowserRecommendation() {
+                this.copyURLForChrome();
+            }
+
+            checkBrowserCompatibility() {
+                const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+                const browserWarning = document.getElementById('browserWarning');
+                const browserMessage = document.getElementById('browserMessage');
+                
+                if (isSafari) {
+                    browserMessage.textContent = 'Safari doesn\'t support Web MIDI API. Please use Chrome or Firefox for full functionality.';
+                    browserWarning.style.display = 'block';
+                } else if (!navigator.requestMIDIAccess) {
+                    browserMessage.textContent = 'Your browser doesn\'t support Web MIDI API. Please use Chrome, Firefox, or Edge.';
+                    browserWarning.style.display = 'block';
+                } else {
+                    browserWarning.style.display = 'none';
+                }
+            }
+
+            showGenericMIDIError() {
+                alert(`
+Web MIDI API not available in this browser.
+
+Please use:
+• Chrome (recommended)
+• Firefox
+• Edge
+
+These browsers have full Web MIDI support for music hardware.
+                `);
+            }
+
+            showDeviceSelection(outputs) {
+                if (outputs.length === 0) {
+                    this.log('No MIDI devices found. Please check connections.', 'error');
+                    this.showDeviceTroubleshooting();
+                    return;
+                }
+
+                // Create a more user-friendly device list
+                const deviceList = outputs.map((output, index) => 
+                    `${index + 1}. ${output.name}`
+                ).join('\n');
+                
+                const message = `Multiple MIDI devices found:\n\n${deviceList}\n\nSelect your Chroma Console:`;
+                const selection = prompt(message + '\n\nEnter the number (1, 2, 3...) or part of the device name:');
+
+                if (selection) {
+                    let selectedDevice = null;
+                    
+                    // Try to parse as number first
+                    const deviceNumber = parseInt(selection);
+                    if (!isNaN(deviceNumber) && deviceNumber >= 1 && deviceNumber <= outputs.length) {
+                        selectedDevice = outputs[deviceNumber - 1];
+                    } else {
+                        // Try to find by name
+                        selectedDevice = outputs.find(output => 
+                            output.name.toLowerCase().includes(selection.toLowerCase())
+                        );
+                    }
+                    
+                    if (selectedDevice) {
+                        this.device = selectedDevice;
+                        this.connected = true;
+                        this.updateConnectionStatus();
+                        this.log(`Connected to ${this.device.name}`, 'success');
+                        this.initializeDeviceState();
+                    } else {
+                        this.log('Device not found. Please try again.', 'error');
+                    }
+                } else {
+                    this.log('Device selection cancelled', 'info');
+                }
+            }
+
+            log(message, type = 'info') {
+                const logContainer = document.getElementById('midiLog');
+                const entry = document.createElement('div');
+                entry.className = `log-entry ${type}`;
+                entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+                
+                logContainer.appendChild(entry);
+                logContainer.scrollTop = logContainer.scrollHeight;
+                
+                // Keep only last 50 entries
+                while (logContainer.children.length > 50) {
+                    logContainer.removeChild(logContainer.firstChild);
+                }
+            }
+        }
+
+        // Initialize the editor
+        const editor = new ChromaConsoleEditor();
+        editor.initialize();
+
+        // Handle page visibility change
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible' && editor.connected) {
+                // Show resync warning when user returns to tab
+                setTimeout(() => {
+                    document.getElementById('resyncWarning').style.display = 'block';
+                }, 1000);
+            }
+        });
+    </script>
+</body>
+</html>
